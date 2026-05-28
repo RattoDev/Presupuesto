@@ -6699,7 +6699,7 @@ const WHOAMI_URL       = WORKER_BASE + '/whoami';
 // Si SPA_CLIENT_ID está vacío, MSAL no se carga y la app funciona sin auth.
 // ============================================================================
 const MSAL_TENANT_ID = "394fd463-92ba-4fde-9bc4-b5661afdf620";
-const MSAL_CLIENT_ID = "";
+const MSAL_CLIENT_ID = "913efd51-f815-4257-826e-f681f9b36600";
 const MSAL_CDN       = "https://alcdn.msauth.net/browser/3.21.0/js/msal-browser.min.js";
 const MSAL_SCOPES    = ["openid", "profile", "email", "User.Read"];
 
@@ -6812,31 +6812,51 @@ function findSellerByEmail(email) {
 }
 
 function showAuthBadge(identity) {
-  if (!identity) return;
   const existing = document.getElementById('authBadge');
   if (existing) existing.remove();
+
+  // Si MSAL no está configurado Y no hay identidad → no mostrar nada
+  if (!identity && !_isMsalConfigured()) return;
 
   const badge = document.createElement('div');
   badge.id = 'authBadge';
   badge.style.cssText = [
     'position:fixed', 'top:8px', 'right:8px',
-    'background:rgba(54,123,42,0.95)', 'color:#fff',
+    identity ? 'background:rgba(54,123,42,0.95)' : 'background:rgba(40,40,40,0.92)',
+    'color:#fff',
     'padding:6px 10px', 'border-radius:6px',
     'font-size:12px', 'font-weight:600',
     'z-index:9999',
     'box-shadow:0 2px 8px rgba(0,0,0,0.15)',
-    'max-width:240px',
+    'max-width:320px',
     'overflow:hidden', 'text-overflow:ellipsis', 'white-space:nowrap',
-  ].join(';');
-  const label = identity.name || identity.email;
-  badge.innerHTML = '<span style="opacity:.8">Conectado:</span> ' + label;
-  badge.title = identity.email;
+    identity ? '' : 'cursor:pointer',
+  ].filter(Boolean).join(';');
+
+  if (identity) {
+    const label = identity.name || identity.email;
+    badge.innerHTML = '<span style="opacity:.8">Conectado:</span> ' + label +
+      ' <span style="opacity:.5;font-weight:400;margin:0 4px">|</span>' +
+      '<span id="authSignOutLink" style="opacity:.85;text-decoration:underline;cursor:pointer;font-weight:600">Salir</span>';
+    badge.title = identity.email;
+    setTimeout(() => {
+      const link = document.getElementById('authSignOutLink');
+      if (link) link.onclick = (e) => { e.stopPropagation(); authSignOut(); };
+    }, 0);
+  } else {
+    badge.innerHTML = '🔒 Iniciar sesión con Microsoft';
+    badge.onclick = () => authSignIn();
+  }
   document.body.appendChild(badge);
 }
 
 async function applyAuthIdentity() {
   const me = await loadAuthIdentity();
-  if (!me) return;
+  if (!me) {
+    // Sin sesión activa: si MSAL está configurado, mostrar botón Sign In
+    if (_isMsalConfigured()) showAuthBadge(null);
+    return;
+  }
   _authIdentity = me;
   showAuthBadge(me);
 
