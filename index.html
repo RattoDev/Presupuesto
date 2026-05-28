@@ -6732,7 +6732,10 @@ async function getMsalInstance() {
     auth: {
       clientId: MSAL_CLIENT_ID,
       authority: 'https://login.microsoftonline.com/' + MSAL_TENANT_ID,
-      redirectUri: window.location.origin + window.location.pathname,
+      // Solo origin (sin pathname) — debe matchear EXACTO el Redirect URI
+      // configurado en Entra ID. En localhost: http://localhost:9876.
+      // En producción: https://presupuestador.rattohnos.com.ar.
+      redirectUri: window.location.origin,
     },
     cache: {
       cacheLocation: 'sessionStorage',   // No persiste cross-tab cierre
