@@ -6770,8 +6770,19 @@ async function authSignIn() {
     alert('La autenticación con Microsoft aún no está configurada. Pasale el Client ID a IT.');
     return;
   }
-  const instance = await getMsalInstance();
-  await instance.loginRedirect({ scopes: MSAL_SCOPES });
+  try {
+    console.log('[Auth] Cargando MSAL SDK...');
+    const instance = await getMsalInstance();
+    if (!instance) throw new Error('MSAL no inicializó (instance es null)');
+    console.log('[Auth] MSAL OK, iniciando loginRedirect con scopes:', MSAL_SCOPES);
+    console.log('[Auth] Redirect URI será:', window.location.origin);
+    await instance.loginRedirect({ scopes: MSAL_SCOPES });
+  } catch (e) {
+    console.error('[Auth] authSignIn falló:', e);
+    alert('No se pudo iniciar el login Microsoft.\n\n' +
+          'Error: ' + (e?.errorCode || '') + ' ' + (e?.message || e) + '\n\n' +
+          'Abrí DevTools → Console para ver detalles.');
+  }
 }
 
 async function authSignOut() {
