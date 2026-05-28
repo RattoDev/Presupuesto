@@ -6700,7 +6700,9 @@ const WHOAMI_URL       = WORKER_BASE + '/whoami';
 // ============================================================================
 const MSAL_TENANT_ID = "394fd463-92ba-4fde-9bc4-b5661afdf620";
 const MSAL_CLIENT_ID = "913efd51-f815-4257-826e-f681f9b36600";
-const MSAL_CDN       = "https://alcdn.msauth.net/browser/3.21.0/js/msal-browser.min.js";
+// jsdelivr es más confiable que alcdn.msauth.net (que solo tiene v2.38.0,
+// las versiones 3.x sirven 404).
+const MSAL_CDN       = "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.21.0/lib/msal-browser.min.js";
 const MSAL_SCOPES    = ["openid", "profile", "email", "User.Read"];
 
 let _msalInstance   = null;
