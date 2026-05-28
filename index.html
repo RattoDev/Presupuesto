@@ -6760,7 +6760,11 @@ async function getAuthToken() {
       scopes: MSAL_SCOPES,
       account: accounts[0],
     });
-    return result.accessToken || result.idToken;
+    // Usar el ID token (no el access token):
+    // - ID token: audience = nuestro Client ID, contiene el email del user.
+    //   Es el que el worker puede validar contra nuestro SPA_CLIENT_ID.
+    // - Access token: audience = Microsoft Graph (no nuestro app).
+    return result.idToken;
   } catch (e) {
     console.warn('getAuthToken silent failed:', e?.message || e);
     return null;
