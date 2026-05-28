@@ -1185,9 +1185,144 @@
     .toma-tipo-btn, .toma-chip-opt { font-size: 12px; padding: 6px 10px; }
   }
 
+
+  /* ===== Login Screen (gate de auth Microsoft) ===== */
+  #loginScreen {
+    position: fixed; inset: 0; z-index: 999999;
+    background: linear-gradient(135deg, var(--jd-green) 0%, var(--jd-green-darker) 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    opacity: 1; visibility: visible;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+  }
+  body.authenticated #loginScreen {
+    opacity: 0; visibility: hidden; pointer-events: none;
+  }
+  /* Mientras no esté autenticado, ocultar el resto del body
+     (defensa en profundidad — overlay también lo tapa visualmente) */
+  body:not(.authenticated) > header.topbar,
+  body:not(.authenticated) > main,
+  body:not(.authenticated) > .nav-overlay,
+  body:not(.authenticated) > .fab-floating,
+  body:not(.authenticated) > #fabTop,
+  body:not(.authenticated) > #fabReset,
+  body:not(.authenticated) > #authBadge {
+    visibility: hidden;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 44px 36px 32px;
+    max-width: 440px; width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    border-top: 6px solid var(--jd-yellow);
+    position: relative;
+  }
+  .login-logo {
+    display: block; margin: 0 auto 24px;
+    height: 52px; width: auto;
+  }
+  .login-title {
+    font-size: 30px; font-weight: 800;
+    color: var(--jd-green-darker);
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+  }
+  .login-subtitle {
+    color: var(--jd-gray-700); font-size: 14px;
+    margin: 0 0 28px;
+  }
+  .login-tagline {
+    background: var(--jd-yellow-soft);
+    color: var(--jd-gray-900);
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin: 0 0 26px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .login-btn-microsoft {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 14px;
+    padding: 14px 28px;
+    background: #2F2F2F;
+    color: #fff;
+    border: 1px solid #1A1A1A;
+    border-radius: 6px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
+    font-family: inherit;
+    min-width: 280px;
+  }
+  .login-btn-microsoft:hover { background: #404040; }
+  .login-btn-microsoft:active { transform: scale(0.98); }
+  .login-btn-microsoft:disabled { opacity: 0.65; cursor: progress; }
+  .login-ms-squares {
+    display: inline-block;
+    width: 20px; height: 20px;
+    position: relative;
+  }
+  .login-ms-squares > span {
+    position: absolute; width: 9px; height: 9px;
+  }
+  .login-ms-squares > span:nth-child(1) { top: 0;  left: 0;  background: #F25022; }
+  .login-ms-squares > span:nth-child(2) { top: 0;  left: 11px; background: #7FBA00; }
+  .login-ms-squares > span:nth-child(3) { top: 11px; left: 0;  background: #00A4EF; }
+  .login-ms-squares > span:nth-child(4) { top: 11px; left: 11px; background: #FFB900; }
+  .login-hint {
+    margin: 18px 0 0;
+    font-size: 12px; color: var(--jd-gray-500);
+  }
+  .login-loading {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 14px 28px; min-width: 280px;
+    color: var(--jd-gray-700); font-size: 14px; font-weight: 500;
+  }
+  .login-spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid var(--jd-gray-300);
+    border-top-color: var(--jd-green);
+    border-radius: 50%;
+    animation: loginSpin 0.7s linear infinite;
+  }
+  @keyframes loginSpin { to { transform: rotate(360deg); } }
+  .login-error {
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    background: #FFEBEE;
+    color: var(--jd-danger);
+    border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+    text-align: left;
+  }
+  @media (max-width: 480px) {
+    .login-card { padding: 32px 22px 24px; }
+    .login-title { font-size: 24px; }
+    .login-btn-microsoft, .login-loading { min-width: 240px; padding: 12px 18px; }
+  }
+
 </style>
 </head>
 <body>
+<div id="loginScreen">
+  <div class="login-card">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKwAAAAtCAYAAAAz3YClAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAARc0lEQVR42u1de5RdVXn/fffODMkkQkh4hYRKJPGBtmpCq0mhVKxUEBACJRaLAV3KElOEZclCWupCrCAWlSS11lXEFzGNVgpqrdqqQCWJIKkBJCJLE1ECAQLk4Uzm3nN+/WO+r/n4ss+55965M8mqs9c669y595z9/O3f/l57j2A/SCTFPosIMZ7GU0GSfQzSOoDMg5RkXYGbjQ/PeNovkoHS/T2J5FT/PUnxzDuexlNlhlXg1MLzBEARydsFq4hkJA8B8DYAZwCYDaAfwJMA7gXwBRH5D32+1m4Z4+m3lwlrkQ07eSYyK8nTST7K8nQryWlWxvhojKdShjUm1M+TAbwSwBwARwDYAWAzgB+LyKMOVCxSmhyzngNgtZbdUOamXuLqVQewHsDrATxXlvd4GmdWY8JZJJeVsOFOkt8keZpn3AIWFpJzSP6GZE6yqXnkIc9M77v1/i8puXc8jacI1neRfMYBKSfZcFczAG0lySkp0Lo8P6vPNsK7d5FcTXJzALE999r/L6D9bVEmtZ01knW9akZcowHWjzgwNRIs6EHcdOC9j+ShHrRWQZJTSG7TdzK9dpNc5Mo/UIFrTGtlr9Dfe7olT6feI9mjdxmtAQxl1srGIgz0vrrqVXQIbV+91RiFtkk3wHqpAmYoADVzzGp3//uQ3teQ7LMKuXznh3xI8lMGRJK9DrRPOUYnybUe/CWWjK5O3m7l6fMhOU0tJIX13h8ZuEXf1xPfHUlyLskT9ZpH8qiESbOtfu5xbJiTfDmAjwJo6m+WUaZKUGqmmbLUq0rUawF8QET+OlRumlOuLH3PgCoiDVXMtpN8AMCJ7tlpZt4iKVH5su9IHg3gbwC8WutTpSOaALYB2ArgQQA/ALBWRAai8tmppWX4xhkAlgH4YwBC8i4Al4jIZm+6c+18M4ALAUzWdow1iK2PtwJYJiJroonRKdqZMuufAFgIYD6Ao7XuPg0A+KUS0NcAfFtEdrTdz44Fv5yQMU0JWk/yr0guJHk+yVuCaEC33A+QPErzNOY8KcGw1+hvB5DsVUbuIfnLUI/1RbKffa/MtYndSY+QvIrkwSORnZ0c10vynkQ5G7TttbAaLeT+lYZIHufFmuDkuVDbkhIZTfxLiZWbSC4lOamKyIcgax5FcjAhBpDkjanMSJ5CckeokIFsqT7Tp/fpaiGge34byeNCntfpM00nw95SsvTYKrFY3xt0nVT1ajplMgsdemqnoHV1e4uzfOR6mRXkQicW2Vjcqc8MOh1hX12DWs+bXT1tYr2c5B0JsbEIoHkQLS09SPJ1lUDrOvUCBxR//75ji16nnPS52RXfy0l+NypCJP89PEOSu0h+WhntewVWgtMrAHaJA2zewcVEx1t6ayegdYrLvcGU5yftAwZWB9gf6rNDbdQ5AqMbz9vEykiuttVQ72eQfM6NU5ZQxhsJy1KesDxZf1zcErRuwD8eQGKde4Yt1QVaYa9biv3M+jXJiaGM+cHyUDQLfT3WlWmqbpBnOwbvNEWLSNMx8Px2QOsm6RvCasWQP0meEcBwKfe/dJqz+JyTGCcmJmVRahb0M0leVgZa/+XUIHDXAQwB2KAKzfP8+fodVVl6CMALg7dqil4DADIVqteQ/ACAqwHketX0TuyJV2iq0vQMgPNVqE8CVhWUmog8QvIUAB9Sgb/WhqIyAcDBrj+sXnWncP4Tybn6WztKy9Lwd+q5ywHcDqCp7bxR++58AAcUKLsC4FCtm0+5KkqxvLo+H/ukAeCpgrrl6tX8hIh8XYF0AoAvOQU61WcDANYB2ADgcX1uJoBXAZin/R3foY77x0huEZFVSUXMsd/nEjOmSfLF0YaYYLf/SsycHSQPD7ZYY52rEowT2fanJF9dNZYgmI76K16T9DpEzS5X6MrABAOQ5NlVWNaZ9I5zcltRst+OTygzvVq/WOd+VTJ/nVjZtmh77NnJ+tmvQL5OP27RPzXXpqkkf5VYMZpuzK8m+aKSvplD8qNOho9iUqb5zErizgH2+iBT2P3tXnlKGNtfoHZThmV+k5NzJQHy15BcRfJxV+HdJO8n+X6SB1YFa3QBj9DeeLjKkH5QTFT4SlXA6n1VwbKZmgy3hXdbldEXwGN5PmaiRXj+iALA3lehT2wc/7mA1EjyRySPDWPREy6Pg3mqbEXwW963J/vBAfacUAHrhIc1+AWhcAPeh8N7NrhfL1GUPItMIfkKNTIfkwJ3p+7PNq+akyHnBbnK7g+7/pKySaOMtruCwuOZ5XeDeauonqIMWATYScE1KiRnFgB2fYt+sfdfllCcLI97SB7kVoVaC1IxU+chJB8qYew/2gtDbrmeplpfnqjQHSRnh4J7SV5ZMkPemRKeXUf0FAnWcTaOtZ9f27Y5AYanXLyEtGDXFQklNlfX86qgoNgzN7ViVzdeE0sA2x/dwSRnFAG24mpxU6ir5fEMyd+pbEfdmyhfQnJ7gWn0X4tY1ip1Y4njYKc6Fq7WCK6fJGQ9Y4onlTnFy69FA6HLW1/XgyM6dD/qhHkkAYannTNBStj1CB2E1OR/FclXhu/sud+oPVxKrCJjBlhX1lQXB5IHFvxL7yBqs7+Naa8MeeYOc0fs1d+uo6froERFISsxTzART/AuB9JaYlAP1bIOS/2+DwFr9tAZLgzS98VmkhNKANvjlMoUu97tQLCmgGU/UsZWYwxYI7IzE+Ii1SM5oVOicWLLgU6XiRPiXN8fNTMNAaiJyBY1pZjv2kwKFmSdqemhqSaJujPNNNQUtVJEPu02E+bOK/ZZ9df/zF0/UQvFm5yZqj7CZb2eEPhbXXURaWp9/xbARG2jOBPORhEZVDMaE0DKVFl8tzPTeTPUx9x7NwQTk5l23qE7LbL9IAjGyj8hxIGYae9WERlU7LQdXK/viIhsB3Cbi1uBK29BFXnlbWHmNxOKQ57wCK1yIXHGNnNJfr+icfpOkn8wAldobYQMO4Pkp0rk8iVF7Ofae3GB8rpRxR6Tk/vUdJcHa4R3a/fsY4a1d79V4AVNOpU6WNUkofTb/T99XXoC4jOSPSLyeZK/ALACwO8FI7exTs3ddwC4VkSute3bItJUl+ZNavzOgnMAYSbZTL6L5DtE5Ital2ZVsCo7T9eIsarRWn1q1J6H4e04U5xB2xu3nwawypi0gF37AFwSHCi59vMyERmywdXPywEsd4xlK9nFJJcB2J2KThszet0TmTU9MK6RySMpp1KbKdc8HnYOK1/WYdq/rMK0B5B8O8nvknw2Ia8+SPJakrPcjDamObtA1s1LYmr934uqMq1jgoXOJtxpinUdCkEqZfEM5xaw6+Mqp0WT0RSSWwuUmQuKrCxjwbCunAkuei4PCtH0kcbvhuCrgUT9Njlzo1ReXlVBmkfyjSSPVztjLXh3THk7xkVxVVHesoSlYYDkS8s05tDgWc570mgjGqlRMnmsXjeUTR7X7nsKFKkPRvA5kH+4QEHbUKC0jjVg+zXPCNi9PJkjBOyMAsBurgTYoMBIK806MPPqEvNYQ7Xl1SR/kNA8W3s70ux2UbBUdCNlJK9oAdZ6It7XD+4Ojb5PbZERZZadBSaw0xOOlrG2w0qBcT8n+ZKR6g6ufi8rILf7vXm01kqLE5FMZYzUpjIxzVplyIzkiwGcFawIJgfeCWCuiCwQkXNF5A8BzAVwhwuCMdk6B/AmkseWBb+41BtkRx/A0Sy4WBCMsgPANwAsEJHrKkbDXx6CXDKtyy0i8phq0nmQD2u6TX5VsMqYXN8qcGbU7dIqP28raNsxTvYeqSXCApayUNZWsya0VZCCN1cAZ/rZd6TldaYDnLjG3QfgZBG5329uE5ENAN6I4RNf/KAZyM+q2CksULJqWp/UFZ/3IDtNRNaVgVWZL9cgnZPDJK3rpLixRGmg/vYJLbsWTFzHk1ygz+2LHcNW5k8DiOx+fJdNZ6kyHvTj300jvRXwmkSFBMBSEdlNstcBP9e/B5VN/N4lu8/vkGUMZF8GsBjD+6MWA7hA7+9V23Hu8jaWX0zypDZsiZeHFaKp9b9dRB6K7Jpg2QcAfDMwjD1/+X5wgMi6BAkAwNlu0nYqx+Yq1i0MeVt+d4+2W3NdUJ6ortrJqX1ZTmOeGIR7e/dHLXz3JsO+J8i/dr+0pM5LSmTtLRq5JS0OB3lR2OXg81hQQQY3GfjEAjlxiOSxUZ8YYzvs7MQuatM9/rzdOILE2C0qcM3ucpaI7jKsY4H+xM+DAJpFTKHf7wawPcGmI/X2TFLFcELwbPWJyAoAt6h40HQzPMPwkUwrrQ6JCWPy3SXOzixuaf9vEbnbZPuSfjP5/E4A9wSxKFPZ/LJ9wbI+OB7A2rBymZhzPckpanevtwHWuvMMXhdEOivjOyKyRcWyvKuAdSz0dEKmnAbdqp0AoLHAYWrAjyAdGiFwc3U+NFVBbOrfDe20i1RO6nEdZfLnSQCuU8BFTT0neZiKFymD9zVt1Ntcm39f4K49j+TM4NAYq2TlLQ91MxFoJoCV7uy0nlbnR6hDyM4F/pwqXHlCHLi+qDLdbNhGPP9wt0z98hfoLOl1VoY6gF79fjGASY6pTLbcOAp1/b8VQUR2AVgEYJdjDTjWXUpyoTKILXt1ff8i9YxlQcG8F8B3WrGrq0tTB/nfMBxfUQtKaz+A92iZtTFmWdu2cyuA/8GebUNwn08BcBvJqUoI9DEaPrZDlfcmyYNIflWVdE8ITf38DV2h6qNyuLWTxc5KyCPmCDi14N03qLySJTw+pTJSBRn2/RXff2vB7oBMvXyzg+97ssqLXh60Op/Xrlzn6vHeRNxprnrAwWNthw1ju6BksyZJ/lzPrJhYklcfyfM0GL5si8wxrZxGI1a63EBuCUqXB+Fykq/TmNAT9O8obNu7T7itMjIagA15LC/ZArJeQWLPvrvADfsLfa6tQ9+Cu/aJoMQ9T4F0SuqYADaA9iq3nanIpf0zkv9I8p3qGT1ZXfzLNeCnyA1u7XxLVbd8t1h2ScLr1GqbSOqcrve14ekqAuwVFQDrt6yvTXSm5fUPzr++sSDS6n1d0Jr/LuRpgPy5OyVlrAHr40RuduOUCuCvEq8RvVrNVpFqowZalU+/VQDaRtgr1SgA6x2scJpgAGzcRJmTvLJKB7iBPVqD2OMKYact9usKEcUeO8lmKjs8UtOZymYm3LXN4K59Afec27vXnq4EYGeq2NURYKOrnuQnExM6HkTScOBsFBy44d9tOdlHQz4wZWmRGpx7sSfgW1SZqQUvlDgXai+A+wH8mQrj7Zy8Lc7gbuU924YJp0dENqkCaOat3CmRfZrnjGB+aej3N4vINqeUtW1GUovBr/D8U8p9WVNc+0zpsfplejUS2TdcmyxM1ALyKwWwaJty/XwxgCXqxu5xCpMf5x7sOUTQexcz51zpwfBp7qeKyA3thJR2k2VtVh9E8quJGRUvz7BfYxv/2yAYt6NcNVC4v701Y38wsZSt1N/mJFhliOQLR6ooOJZ9aWIL0qCuANbmzySiqD4ZxSiX57cT4lfbS3DY2TuH5BcSQUdZ4piiKC48q8cLTBsTmbWiXdY08B+2kGvuJfkXqffbAO3pGqO7XcPz/rTdvIIs/iHVzp/R87/63W/n6EbFnapkvLmTslq05yzN28o404ldojG2X9Hfd3L4FPQDo0jiAHukgnaXgmUF95wa2YkI4yfFK0hew+FDrQdKxvk5FfcuU9sy2gGrjDJoxds8Sf4+hvfozMHw0UDPqd1xrYisSb3TTllq/6url+oxizLrZHl2+U3VJf7JxG8T1OHxhMZJdG13gNtBcQCAw8vKIHmkik5bKuY9E8CQiGzt0uQSbyvl8Dm9swAcqWPRxPC/tHoUwMMi8kQAar5f/cOVdg9Q61Y53cwvKn/dLquT9hTF2LYynY1Gnf0+vqoWh05YXcYYuDUUn+LdlVmmnSDo0r9JKmP8bpfVaXvaXZXY4l9UdYt1E/ga8Tj/Lzku/42fLrvGAAAAAElFTkSuQmCC" alt="Ratto Hnos." class="login-logo">
+    <h1 class="login-title">Presupuestador</h1>
+    <p class="login-subtitle">ProRatto · Concesionario Oficial John Deere</p>
+    <div class="login-tagline">Acceso para vendedores y staff Ratto Hnos.</div>
+    <div id="loginButtonArea">
+      <div class="login-loading">
+        <div class="login-spinner"></div>
+        <span>Verificando sesión...</span>
+      </div>
+    </div>
+    <p class="login-hint">Iniciá sesión con tu cuenta corporativa @rattohnos.com.ar</p>
+  </div>
+</div>
+
 <div class="app">
 
   <header class="topbar">
@@ -6778,6 +6913,7 @@ async function authSignIn() {
   }
   try {
     console.log('[Auth] Cargando MSAL SDK...');
+    _setLoginButtonState('<div class="login-loading"><div class="login-spinner"></div><span>Redirigiendo a Microsoft...</span></div>');
     const instance = await getMsalInstance();
     if (!instance) throw new Error('MSAL no inicializó (instance es null)');
     console.log('[Auth] MSAL OK, iniciando loginRedirect con scopes:', MSAL_SCOPES);
@@ -6870,13 +7006,30 @@ function showAuthBadge(identity) {
   document.body.appendChild(badge);
 }
 
+const LOGIN_BUTTON_HTML = '<button class="login-btn-microsoft" onclick="authSignIn()" id="loginBtn">' +
+  '<span class="login-ms-squares"><span></span><span></span><span></span><span></span></span>' +
+  'Iniciar sesión con Microsoft</button>';
+
+function _setLoginButtonState(html) {
+  const area = document.getElementById('loginButtonArea');
+  if (area) area.innerHTML = html;
+}
+
 async function applyAuthIdentity() {
-  const me = await loadAuthIdentity();
-  if (!me) {
-    // Sin sesión activa: si MSAL está configurado, mostrar botón Sign In
-    if (_isMsalConfigured()) showAuthBadge(null);
+  // Si MSAL no está configurado (dev mode): mostrar app sin login
+  if (!_isMsalConfigured()) {
+    document.body.classList.add('authenticated');
     return;
   }
+
+  const me = await loadAuthIdentity();
+  if (!me) {
+    // No logueado → mostrar el botón Microsoft en el login screen
+    _setLoginButtonState(LOGIN_BUTTON_HTML);
+    return;
+  }
+  // Logueado → ocultar login screen + mostrar badge
+  document.body.classList.add('authenticated');
   _authIdentity = me;
   showAuthBadge(me);
 
