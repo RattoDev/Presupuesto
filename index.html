@@ -2114,7 +2114,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v65</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v66</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -6329,13 +6329,19 @@ function injectIcons() {
   document.getElementById('btnHome').innerHTML = ICONS.home;
   setPrepend(document.getElementById('btnCart'), ICONS.cart);
   setPrepend(document.querySelector('.search-bar'), ICONS.search);
-  document.getElementById('addIconSlot').innerHTML = ICONS.plus;
-  document.getElementById('cartIconSlot').innerHTML = ICONS.cart;
-  document.getElementById('closeIconSlot').innerHTML = ICONS.close;
-  document.getElementById('printIconSlot').innerHTML = ICONS.print;
-  document.getElementById('waIconSlot').innerHTML = ICONS.whatsapp;
-  document.getElementById('emailIconSlot').innerHTML = ICONS.email;
-  document.getElementById('copyIconSlot').innerHTML = ICONS.copy;
+  // Defensivo: si un slot ya no existe en el HTML (porque sacamos su botón),
+  // no romper el handler entero (esto pasó en v62 con closeIconSlot).
+  function _slot(id, html) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = html;
+  }
+  _slot('addIconSlot', ICONS.plus);
+  _slot('cartIconSlot', ICONS.cart);
+  _slot('closeIconSlot', ICONS.close);
+  _slot('printIconSlot', ICONS.print);
+  _slot('waIconSlot', ICONS.whatsapp);
+  _slot('emailIconSlot', ICONS.email);
+  _slot('copyIconSlot', ICONS.copy);
   // FABs
   setPrepend(document.getElementById('fabTop'), ICONS.arrowUp);
   setPrepend(document.getElementById('fabReset'), ICONS.reset);
