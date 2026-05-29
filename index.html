@@ -1604,6 +1604,162 @@
     align-items: center;
   }
 
+
+  /* === COMPARADOR DE EQUIPOS === */
+  .family-card-compare { /* Diferenciar visualmente la card de comparador */
+    background: linear-gradient(135deg, var(--jd-white) 0%, var(--jd-gray-50) 100%);
+  }
+  .family-card-compare::before { background: var(--jd-green); }
+
+  .compare-family-picker {
+    display: flex; align-items: center; gap: 12px;
+    margin: 18px 0;
+    flex-wrap: wrap;
+  }
+  .compare-family-picker label {
+    font-weight: 700; color: var(--jd-gray-900);
+  }
+  .compare-family-picker select {
+    flex: 1 1 240px;
+    padding: 12px 14px;
+    border: 2px solid var(--jd-gray-300);
+    border-radius: 10px;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    background: var(--jd-white);
+    cursor: pointer;
+  }
+  .compare-family-picker select:focus {
+    outline: none; border-color: var(--jd-green);
+  }
+
+  .compare-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .compare-col {
+    background: var(--jd-white);
+    border: 2px solid var(--jd-gray-200);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .compare-col-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+    color: var(--jd-gray-500); text-transform: uppercase;
+  }
+  .compare-model-select {
+    padding: 10px 12px;
+    border: 2px solid var(--jd-gray-300);
+    border-radius: 8px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    background: var(--jd-white);
+    cursor: pointer;
+  }
+  .compare-model-select:focus { outline: none; border-color: var(--jd-green); }
+  .compare-model-card {
+    background: var(--jd-gray-50);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .compare-model-line {
+    font-size: 11px; color: var(--jd-gray-500);
+    text-transform: uppercase; letter-spacing: 0.3px; font-weight: 700;
+  }
+  .compare-model-name {
+    font-size: 18px; font-weight: 800; color: var(--jd-green-darker);
+    margin-top: 2px;
+  }
+  .compare-model-price {
+    font-size: 16px; font-weight: 700; color: var(--jd-green-darker);
+    margin-top: 4px;
+  }
+  .compare-model-empty {
+    background: var(--jd-gray-50);
+    border-radius: 8px;
+    padding: 22px 12px;
+    color: var(--jd-gray-500);
+    text-align: center; font-style: italic; font-size: 13px;
+  }
+
+  .compare-hint {
+    background: var(--jd-gray-50);
+    border: 2px dashed var(--jd-gray-300);
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--jd-gray-700);
+    font-weight: 600;
+  }
+
+  .compare-table-card {
+    background: var(--jd-white);
+    border: 2px solid var(--jd-gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .compare-table thead th {
+    background: var(--jd-green);
+    color: var(--jd-white);
+    padding: 12px 10px;
+    font-weight: 800;
+    text-align: left;
+  }
+  .compare-table thead th:first-child { background: var(--jd-green-darker); }
+  .compare-table tbody th {
+    background: var(--jd-gray-50);
+    color: var(--jd-gray-700);
+    padding: 10px 12px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid var(--jd-gray-200);
+    width: 30%;
+  }
+  .compare-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--jd-gray-200);
+    color: var(--jd-gray-900);
+    font-weight: 500;
+    vertical-align: top;
+  }
+  .compare-row-price th, .compare-row-price td {
+    background: var(--jd-yellow-soft) !important;
+    font-weight: 800 !important;
+    color: var(--jd-green-darker) !important;
+    font-size: 16px;
+  }
+  .compare-row-diff td {
+    color: var(--jd-green-darker);
+    font-weight: 700;
+  }
+
+  .compare-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .compare-add-btn {
+    flex: 1 1 240px;
+    min-height: 56px;
+  }
+
+  /* Mobile: stack columns */
+  @media (max-width: 600px) {
+    .compare-columns {
+      grid-template-columns: 1fr;
+    }
+    .compare-table {
+      font-size: 13px;
+    }
+    .compare-table tbody th { width: 35%; }
+  }
+
 </style>
 </head>
 <body>
@@ -1630,7 +1786,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v58</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v59</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1751,6 +1907,26 @@
         </div>
       </div>
     </section>
+
+    <section class="panel" id="panelCompare">
+      <button type="button" class="back-to-menu-btn" onclick="goHome()">
+        <span class="back-icon">←</span> Volver al menú principal
+      </button>
+      <h2 class="panel-title">Comparador de equipos</h2>
+      <p class="panel-subtitle">Elegí 2 equipos de la misma familia para ver sus diferencias.</p>
+
+      <div class="compare-family-picker">
+        <label for="compareFamilySelect">Familia:</label>
+        <select id="compareFamilySelect" onchange="compareSelectFamily(this.value)">
+          <option value="">— Elegí una familia —</option>
+        </select>
+      </div>
+
+      <div class="compare-columns" id="compareColumns"></div>
+      <div class="compare-table-wrap" id="compareTableWrap"></div>
+      <div class="compare-actions" id="compareActions"></div>
+    </section>
+
   </main>
 
   <div class="summary-bar" id="summaryBar">
@@ -5763,7 +5939,7 @@ function setupFontToggle() {
 function setView(view) {
   state.view = view;
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  const map = { home: 'panelHome', lines: 'panelLines', models: 'panelModels', detail: 'panelDetail', cart: 'panelCart' };
+  const map = { home: 'panelHome', lines: 'panelLines', models: 'panelModels', detail: 'panelDetail', cart: 'panelCart', compare: 'panelCompare' };
   document.getElementById(map[view]).classList.add('active');
   updateBreadcrumb();
   updateNavButtons();
@@ -5913,6 +6089,16 @@ function renderFamilies() {
     card.addEventListener('click', () => selectFamily(fam.key));
     grid.appendChild(card);
   });
+
+  // Card "Comparador" — feature transversal (no es una familia más)
+  const compareCard = document.createElement('button');
+  compareCard.className = 'family-card family-card-compare';
+  compareCard.innerHTML = `
+    <div class="family-icon"><span style="font-size: 56px; line-height: 1;">⚖️</span></div>
+    <h3>Comparador</h3>
+  `;
+  compareCard.addEventListener('click', openCompare);
+  grid.appendChild(compareCard);
 }
 
 function selectFamily(famKey) {
@@ -8179,6 +8365,198 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pequeño delay para no competir con el load de MSAL/whoami
   setTimeout(autofillUsdRate, 1200);
 });
+
+
+// ============================================================================
+// COMPARADOR DE EQUIPOS
+// Permite comparar 2 modelos de la misma familia lado a lado.
+// ============================================================================
+
+// Estado: { familyKey: string, A: {lineKey, modelo}|null, B: {lineKey, modelo}|null }
+const compareState = { familyKey: null, A: null, B: null };
+
+function openCompare() {
+  compareState.familyKey = null;
+  compareState.A = null;
+  compareState.B = null;
+  renderCompare();
+  setView('compare');
+}
+
+// Pobla el selector de familias (solo las que tienen al menos 2 modelos)
+function _populateCompareFamilySelect() {
+  const sel = document.getElementById('compareFamilySelect');
+  if (!sel) return;
+  // Si ya está poblado y el valor actual matchea, no hacer nada
+  if (sel.options.length > 1 && sel.value === (compareState.familyKey || '')) return;
+  sel.innerHTML = '<option value="">— Elegí una familia —</option>';
+  FAMILIES.forEach(fam => {
+    const totalModels = fam.lineas.reduce((sum, ln) => {
+      const cat = CATALOG[ln.key];
+      return sum + (cat && cat.modelos ? cat.modelos.length : 0);
+    }, 0);
+    if (totalModels < 2) return; // No tiene sentido comparar si hay <2 modelos
+    const opt = document.createElement('option');
+    opt.value = fam.key;
+    opt.textContent = fam.nombre + ' (' + totalModels + ')';
+    sel.appendChild(opt);
+  });
+  sel.value = compareState.familyKey || '';
+}
+
+// Devuelve todos los modelos de una familia, con info de línea anexada
+function _compareGetModelsForFamily(famKey) {
+  const fam = FAMILIES.find(f => f.key === famKey);
+  if (!fam) return [];
+  const out = [];
+  fam.lineas.forEach(line => {
+    const cat = CATALOG[line.key];
+    if (!cat || !cat.modelos) return;
+    cat.modelos.forEach(m => {
+      out.push({ lineKey: line.key, lineShort: line.short, modelo: m.modelo, precio: m.precio, specs: m.specs });
+    });
+  });
+  return out;
+}
+
+function compareSelectFamily(famKey) {
+  compareState.familyKey = famKey || null;
+  // Si cambia de familia, limpiar las selecciones de modelo
+  compareState.A = null;
+  compareState.B = null;
+  renderCompare();
+}
+
+function compareSelectModel(side, value) {
+  // value tiene formato "lineKey||modelo"
+  if (!value) {
+    compareState[side] = null;
+  } else {
+    const [lineKey, modelo] = value.split('||');
+    compareState[side] = { lineKey, modelo };
+  }
+  renderCompare();
+}
+
+// Renderiza el comparador completo según compareState
+function renderCompare() {
+  _populateCompareFamilySelect();
+  const colsEl = document.getElementById('compareColumns');
+  const tableEl = document.getElementById('compareTableWrap');
+  const actionsEl = document.getElementById('compareActions');
+  if (!colsEl || !tableEl || !actionsEl) return;
+
+  if (!compareState.familyKey) {
+    colsEl.innerHTML = '<div class="compare-hint">Elegí una familia arriba para empezar a comparar.</div>';
+    tableEl.innerHTML = '';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  const models = _compareGetModelsForFamily(compareState.familyKey);
+  if (models.length < 2) {
+    colsEl.innerHTML = '<div class="compare-hint">Esta familia tiene menos de 2 modelos para comparar.</div>';
+    tableEl.innerHTML = '';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  // Render: 2 columnas con selector + info actual
+  colsEl.innerHTML = ['A', 'B'].map(side => {
+    const sel = compareState[side];
+    const selValue = sel ? (sel.lineKey + '||' + sel.modelo) : '';
+    const m = sel ? models.find(x => x.lineKey === sel.lineKey && x.modelo === sel.modelo) : null;
+    const optsHtml = models.map(x => {
+      const v = x.lineKey + '||' + x.modelo;
+      const label = x.lineShort + ' · ' + x.modelo;
+      return '<option value="' + v + '"' + (v === selValue ? ' selected' : '') + '>' + label + '</option>';
+    }).join('');
+    const infoHtml = m
+      ? '<div class="compare-model-card">' +
+          '<div class="compare-model-line">' + (m.lineShort || '') + '</div>' +
+          '<div class="compare-model-name">' + m.modelo + '</div>' +
+          '<div class="compare-model-price">' + (m.precio > 0 ? fmtUSD(m.precio) : 'Precio a consultar') + '</div>' +
+        '</div>'
+      : '<div class="compare-model-empty">Sin seleccionar</div>';
+    return '<div class="compare-col">' +
+      '<label class="compare-col-label">Equipo ' + side + '</label>' +
+      '<select class="compare-model-select" onchange="compareSelectModel(\'' + side + '\', this.value)">' +
+        '<option value="">— Elegí modelo —</option>' +
+        optsHtml +
+      '</select>' +
+      infoHtml +
+    '</div>';
+  }).join('');
+
+  // Render: tabla comparativa (solo si los 2 están elegidos)
+  if (!compareState.A || !compareState.B) {
+    tableEl.innerHTML = '<div class="compare-hint">Elegí ambos equipos para ver la comparación.</div>';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  const mA = models.find(x => x.lineKey === compareState.A.lineKey && x.modelo === compareState.A.modelo);
+  const mB = models.find(x => x.lineKey === compareState.B.lineKey && x.modelo === compareState.B.modelo);
+
+  if (!mA || !mB) {
+    tableEl.innerHTML = '<div class="compare-hint">No encontré uno de los modelos. Probá de nuevo.</div>';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  // Unión ordenada de keys de specs (orden de aparición en mA + las nuevas de mB)
+  const specKeys = [];
+  Object.keys(mA.specs || {}).forEach(k => { if (!specKeys.includes(k)) specKeys.push(k); });
+  Object.keys(mB.specs || {}).forEach(k => { if (!specKeys.includes(k)) specKeys.push(k); });
+
+  // Render filas comparativas
+  let rowsHtml = '';
+  // Fila de precio destacada
+  rowsHtml += '<tr class="compare-row-price">' +
+    '<th>Precio</th>' +
+    '<td>' + (mA.precio > 0 ? fmtUSD(mA.precio) : '—') + '</td>' +
+    '<td>' + (mB.precio > 0 ? fmtUSD(mB.precio) : '—') + '</td>' +
+  '</tr>';
+  specKeys.forEach(key => {
+    const vA = (mA.specs && mA.specs[key] != null) ? mA.specs[key] : '—';
+    const vB = (mB.specs && mB.specs[key] != null) ? mB.specs[key] : '—';
+    const diff = (String(vA) !== String(vB)) ? ' class="compare-row-diff"' : '';
+    rowsHtml += '<tr' + diff + '>' +
+      '<th>' + key + '</th>' +
+      '<td>' + vA + '</td>' +
+      '<td>' + vB + '</td>' +
+    '</tr>';
+  });
+
+  tableEl.innerHTML = '<div class="compare-table-card"><table class="compare-table">' +
+    '<thead><tr><th></th><th>' + mA.modelo + '</th><th>' + mB.modelo + '</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody>' +
+  '</table></div>';
+
+  // Botones de agregar al carrito
+  actionsEl.innerHTML =
+    '<button class="btn btn-yellow btn-big compare-add-btn" onclick="compareAddToCart(\'A\')">' +
+      '+ Agregar ' + mA.modelo + ' al presupuesto' +
+    '</button>' +
+    '<button class="btn btn-yellow btn-big compare-add-btn" onclick="compareAddToCart(\'B\')">' +
+      '+ Agregar ' + mB.modelo + ' al presupuesto' +
+    '</button>';
+}
+
+function compareAddToCart(side) {
+  const sel = compareState[side];
+  if (!sel) return;
+  const cat = CATALOG[sel.lineKey];
+  const m = cat && cat.modelos ? cat.modelos.find(x => x.modelo === sel.modelo) : null;
+  if (!m) return;
+  // Set state como si hubiera entrado por la vía normal
+  state.familyKey = compareState.familyKey;
+  state.lineKey = sel.lineKey;
+  state.model = m;
+  state.selectedOpts.clear();
+  addToCart();
+}
+
 </script>
 </body>
 </html>
