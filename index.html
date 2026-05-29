@@ -1458,6 +1458,7 @@
       <div id="tomasArea"></div>
 
       <h3 class="section-title">Datos del cliente y operación</h3>
+      <p class="panel-subtitle">Los campos marcados con <span class="req-mark">*</span> son obligatorios.</p>
       <div class="specs-card">
         <div class="form-grid">
           <div class="field"><label>Cliente <span class="req-mark">*</span></label><input type="text" id="fClient" placeholder="Razón social o nombre"></div>
@@ -1877,12 +1878,20 @@ const CATALOG = {
       { modelo: "S100", precio: 6800, specs: { Combustible: "Nafta", "Ancho de Corte": "107 cm", Potencia: "17,5 HP" } },
       { modelo: "S140", precio: 8100, specs: { Combustible: "Nafta", "Ancho de Corte": "122 cm", Potencia: "22 HP" } },
       { modelo: "S180", precio: 9600, specs: { Combustible: "Nafta", "Ancho de Corte": "137 cm", Potencia: "25 HP" } },
-      { modelo: "Z325E", precio: 10000, specs: { Combustible: "Nafta", "Ancho de Corte": "122 cm", Potencia: "22 HP" } },
-      { modelo: "Z530M", precio: 15700, specs: { Combustible: "Nafta", "Ancho de Corte": "137 cm", Potencia: "24 HP" } },
-      { modelo: "Z994R", precio: 35000, specs: { Combustible: "Diesel", "Ancho de Corte": "183 cm (72\")", Potencia: "24,7 HP" } },
-      { modelo: "Z950M", precio: 25469, specs: { Combustible: "Nafta", "Ancho de Corte": "152 cm (60\")", Potencia: "27 HP" } },
       { modelo: "X350", precio: 10400, specs: { Combustible: "Nafta", "Ancho de Corte": "122 cm (48\")", Potencia: "21,5 HP" } },
       { modelo: "X750 Tractor c/Plat.", precio: 29500, specs: { Combustible: "Diesel", "Ancho de Corte": "152 cm (60\")", Potencia: "24 HP" } }
+    ]
+  },
+
+  "cortadoras_radio_cero": {
+    nombre: "Cortadoras Radio Cero",
+    icono: "🌀",
+    nota: "Cortadoras Z-Trak: giro de 180° sin desplazamiento, ideales para áreas con obstáculos.",
+    modelos: [
+      { modelo: "Z325E", precio: 10000, specs: { Combustible: "Nafta", "Ancho de Corte": "122 cm", Potencia: "22 HP" } },
+      { modelo: "Z530M", precio: 15700, specs: { Combustible: "Nafta", "Ancho de Corte": "137 cm", Potencia: "24 HP" } },
+      { modelo: "Z950M", precio: 25469, specs: { Combustible: "Nafta", "Ancho de Corte": "152 cm (60\")", Potencia: "27 HP" } },
+      { modelo: "Z994R", precio: 35000, specs: { Combustible: "Diesel", "Ancho de Corte": "183 cm (72\")", Potencia: "24,7 HP" } }
     ]
   },
 
@@ -4847,7 +4856,8 @@ const FAMILIES = [
     color: "green",
     icon: "garden",
     lineas: [
-      { key: "tractores_jardin", short: "Tractores de Jardín" }
+      { key: "tractores_jardin",      short: "Tractores de Jardín" },
+      { key: "cortadoras_radio_cero", short: "Cortadoras Radio Cero" }
     ]
   },
   {
@@ -5874,6 +5884,10 @@ function getModelChips(model, cat) {
   const hp = s.HP || s['HP Nominal'];
   if (hp != null) chip('HP', hp);
   if (s.Potencia && !hp) chip('Pot.', s.Potencia);
+
+  // Jardín: ancho de corte de plataforma (S/X tractor o Z-Trak radio cero)
+  const isJardinJD = (lk === 'tractores_jardin' || lk === 'cortadoras_radio_cero');
+  if (isJardinJD && s['Ancho de Corte']) chip('Corte', s['Ancho de Corte']);
 
   // Tractores: Tracción + Transmisión (corta)
   if (isJDTractor) {
