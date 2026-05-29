@@ -1423,6 +1423,108 @@
     }
   }
 
+
+  /* === Iteración 2: botones del listado más sutiles === */
+  .model-row-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    grid-template-columns: none !important;
+    gap: 8px !important;
+    padding: 0 12px 12px !important;
+  }
+  .model-btn-add, .model-btn-specs {
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    min-height: 36px !important;
+    flex: 0 0 auto !important;
+  }
+  .model-btn-add { box-shadow: 0 1px 0 var(--jd-yellow-dark) !important; }
+  /* En móvil chico mantener compactos pero permitir wrap */
+  @media (max-width: 380px) {
+    .model-row-actions {
+      flex-wrap: wrap;
+    }
+    .model-btn-add, .model-btn-specs {
+      flex: 1 1 auto !important;
+      font-size: 12px !important;
+    }
+  }
+
+
+  /* === Botón "Volver al menú principal" en listado === */
+  .back-to-menu-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--jd-white);
+    color: var(--jd-green-darker);
+    border: 2px solid var(--jd-gray-300);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: inherit; font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: all 0.15s;
+  }
+  .back-to-menu-btn:hover {
+    border-color: var(--jd-green); background: var(--jd-gray-50);
+    transform: translateX(-2px);
+  }
+  .back-icon {
+    display: inline-block;
+    font-size: 18px; line-height: 1; font-weight: 900;
+  }
+
+
+  /* === Step indicators estilo self-service / kiosk McDonald's === */
+  .step-title, .step-title-h2 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    background: var(--jd-green);
+    color: var(--jd-white);
+    border-radius: 50%;
+    font-size: 16px; font-weight: 900;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(54, 124, 43, 0.3);
+  }
+  .step-optional {
+    font-size: 13px; font-weight: 500;
+    color: var(--jd-gray-500);
+    margin-left: 4px;
+  }
+  /* "PRÓXIMO PASO" cue con flecha animada */
+  .step-divider {
+    margin: 30px 0 18px;
+    text-align: center;
+  }
+  .step-next-cue {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--jd-yellow-soft);
+    border: 2px solid var(--jd-yellow);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: 800;
+    color: var(--jd-green-darker);
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    animation: stepCuePulse 2.5s ease-in-out infinite;
+  }
+  .step-arrow {
+    font-size: 22px; line-height: 1; font-weight: 900;
+    animation: stepArrowBounce 1.5s ease-in-out infinite;
+  }
+  @keyframes stepCuePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 222, 0, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(255, 222, 0, 0); }
+  }
+  @keyframes stepArrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
 </style>
 </head>
 <body>
@@ -1487,6 +1589,9 @@
     </section>
 
     <section class="panel" id="panelModels">
+      <button type="button" class="back-to-menu-btn" onclick="goHome()">
+        <span class="back-icon">←</span> Volver al menú principal
+      </button>
       <h2 class="panel-title" id="modelsTitle">Modelos</h2>
       <p class="panel-subtitle" id="modelsSubtitle"></p>
       <div id="modelsNote"></div>
@@ -1502,16 +1607,23 @@
     </section>
 
     <section class="panel" id="panelCart">
-      <h2 class="panel-title">Carrito del presupuesto</h2>
+      <h2 class="panel-title step-title-h2"><span class="step-num">1</span> Equipos del presupuesto</h2>
       <p class="panel-subtitle" id="cartSubtitle">0 equipos</p>
       <div id="suggestionsArea"></div>
       <div id="cartItems"></div>
 
-      <h3 class="section-title">Equipos entregados como parte de pago</h3>
+      <div class="step-divider">
+        <div class="step-next-cue">
+          <span class="step-arrow">↓</span>
+          <span class="step-next-text">PRÓXIMO PASO · Completá los datos del cliente</span>
+        </div>
+      </div>
+
+      <h3 class="section-title step-title"><span class="step-num">2</span> Equipos entregados como parte de pago <span class="step-optional">(opcional)</span></h3>
       <p class="panel-subtitle">Si el cliente entrega usados, cargá sus datos para que figuren en el presupuesto. No afecta el total (el valor de toma se acuerda aparte).</p>
       <div id="tomasArea"></div>
 
-      <h3 class="section-title">Datos del cliente y operación</h3>
+      <h3 class="section-title step-title"><span class="step-num">3</span> Datos del cliente y operación</h3>
       <p class="panel-subtitle">Los campos marcados con <span class="req-mark">*</span> son obligatorios.</p>
       <div class="specs-card">
         <div class="form-grid">
@@ -6641,7 +6753,7 @@ function renderCart() {
   const actionsDiv = document.createElement('div');
   actionsDiv.style.cssText = 'margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;';
   actionsDiv.innerHTML = `
-    <button class="btn btn-secondary" onclick="goHome()">${ICONS.plus} Agregar otro equipo</button>
+    <button class="btn btn-secondary" onclick="goHome()">${ICONS.plus} Agregar otro equipo nuevo</button>
   `;
   itemsEl.appendChild(actionsDiv);
 }
