@@ -2044,6 +2044,17 @@
   }
 
 
+  /* === v66 fix: FABs pegados al borde derecho ===
+     El .fab-stack es flex column. fab-generate (width:auto) estira el
+     container; los círculos chicos (.fab-reset/.fab-top) sin align-self
+     explícito quedaban al start (izquierda) del container, no al borde
+     derecho del viewport. Forzamos flex-end para que todos se peguen
+     a la derecha. */
+  .fab-stack {
+    align-items: flex-end !important;
+  }
+
+
   /* === v64: Chips de Stock + Órdenes Colocadas === */
   .stock-chip {
     display: inline-block;
@@ -2114,7 +2125,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v66</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v67</span></p>
         </div>
       </div>
       <div class="topbar-actions">
