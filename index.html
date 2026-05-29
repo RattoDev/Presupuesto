@@ -2125,7 +2125,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v69</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v70</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -5560,7 +5560,7 @@ const USED_ESTADO_LABEL = {
 // NO EDITAR A MANO — regenerar con `python3 extract_stock.py`
 // ============================================================================
 
-const STOCK_DATA = {
+let STOCK_DATA = {
   "3036E": { count: 9, ubicaciones: ["Areco", "Arrecifes", "Chivilcoy", "La Plata", "Saladillo", "Salto"] },
   "3036EN": { count: 11, ubicaciones: ["Areco", "Arrecifes", "Chivilcoy", "La Plata", "Luján", "Saladillo", "Salto"] },
   "4045TJ31": { count: 2, ubicaciones: ["Areco", "Chivilcoy"] },
@@ -5583,7 +5583,7 @@ const STOCK_DATA = {
   "Z530M": { count: 2, ubicaciones: ["Areco", "Luján"] }
 };
 
-const ORDERS_DATA = {
+let ORDERS_DATA = {
   "220SL": { count: 3, llegada: "Julio 2026" },
   "3036E": { count: 18, llegada: "Julio 2026" },
   "440R": { count: 2, llegada: "Septiembre 2026" },
@@ -5654,6 +5654,39 @@ function _renderOrderChip(modelCode) {
     word + ' ' + o.count + ' en ' + o.llegada +
   '</span>';
 }
+
+// Fetcher del snapshot live del worker. Se ejecuta al cargar la app y
+// reemplaza STOCK_DATA/ORDERS_DATA con datos frescos (el snapshot del
+// worker se refresca cada 3hs via cron).
+async function _refreshStockFromWorker() {
+  try {
+    const base = (typeof WORKER_BASE !== 'undefined')
+      ? WORKER_BASE
+      : 'https://presupuestos-email.lucas-ivancevich.workers.dev';
+    const r = await fetch(base + '/stock', { credentials: 'omit' });
+    if (!r.ok) {
+      console.warn('Stock fetch HTTP', r.status, '— uso fallback inyectado');
+      return;
+    }
+    const data = await r.json();
+    if (data && data.STOCK_DATA && data.ORDERS_DATA) {
+      STOCK_DATA = data.STOCK_DATA;
+      ORDERS_DATA = data.ORDERS_DATA;
+      console.log('Stock actualizado del worker:', data._meta);
+      // Re-render del listado si está visible
+      if (typeof renderModels === 'function' && state && state.lineKey) {
+        try { renderModels(document.getElementById('modelSearch')?.value || ''); } catch (_) {}
+      }
+    }
+  } catch (e) {
+    console.warn('Stock fetch failed (uso fallback inyectado):', e?.message || e);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  // Lo lanzamos sin await — el fallback inyectado ya está disponible
+  // mientras llega el snapshot fresco.
+  _refreshStockFromWorker();
+});
 
 // FAMILIES — agrupa el CATALOG existente en 3 niveles
 // Home (familia) → Línea → Modelo
