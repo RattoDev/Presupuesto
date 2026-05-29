@@ -7036,7 +7036,7 @@ async function getMsalInstance() {
       authority: 'https://login.microsoftonline.com/' + MSAL_TENANT_ID,
       // Solo origin (sin pathname) — debe matchear EXACTO el Redirect URI
       // configurado en Entra ID. En localhost: http://localhost:9876.
-      // En producción: https://presupuestador.rattohnos.com.ar.
+      // En producción: https://proratto.rattohnos.com.ar.
       redirectUri: window.location.origin,
     },
     cache: {

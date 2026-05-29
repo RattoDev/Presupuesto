@@ -4,7 +4,7 @@ Single-page app desplegada vía GitHub Pages para vendedores de Ratto Hnos.
 
 ## URL
 
-https://presupuestador.rattohnos.com.ar
+https://proratto.rattohnos.com.ar
 
 ## Cómo se actualiza
 
