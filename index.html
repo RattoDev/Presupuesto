@@ -1535,6 +1535,47 @@
     letter-spacing: 0.2px;
   }
 
+
+  /* === "Agregar otro equipo nuevo" más prominente === */
+  .btn-add-more {
+    padding: 16px 28px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    border-width: 2px !important;
+    border-style: dashed !important;
+    width: auto;
+    min-width: 280px;
+  }
+  .btn-add-more:hover {
+    border-style: solid !important;
+    background: var(--jd-gray-50);
+  }
+
+
+  /* === Toma de usados: pregunta conversacional === */
+  .toma-question-card {
+    background: var(--jd-white);
+    border: 2px solid var(--jd-gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+  }
+  .toma-question-text {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .toma-question-q {
+    font-size: 16px; font-weight: 800;
+    color: var(--jd-green-darker);
+  }
+  .toma-question-sub {
+    font-size: 13px; color: var(--jd-gray-700);
+    font-weight: 400;
+  }
+  .toma-question-card .btn { width: 100%; }
+
 </style>
 </head>
 <body>
@@ -1561,7 +1602,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v56</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v57</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1593,6 +1634,9 @@
     </section>
 
     <section class="panel" id="panelLines">
+      <button type="button" class="back-to-menu-btn" onclick="goHome()">
+        <span class="back-icon">←</span> Volver al menú principal
+      </button>
       <h2 class="panel-title" id="linesTitle">Líneas</h2>
       <p class="panel-subtitle" id="linesSubtitle"></p>
       <div class="item-grid" id="linesGrid"></div>
@@ -1610,6 +1654,9 @@
     </section>
 
     <section class="panel" id="panelDetail">
+      <button type="button" class="back-to-menu-btn" onclick="goHome()">
+        <span class="back-icon">←</span> Volver al menú principal
+      </button>
       <div id="equipoHero"></div>
       <div id="specsCard"></div>
       <div id="opcionalesCard"></div>
@@ -1617,6 +1664,9 @@
     </section>
 
     <section class="panel" id="panelCart">
+      <button type="button" class="back-to-menu-btn" onclick="goHome()">
+        <span class="back-icon">←</span> Volver al menú principal
+      </button>
       <h2 class="panel-title step-title-h2"><span class="step-num">1</span> Equipos del presupuesto</h2>
       <p class="panel-subtitle" id="cartSubtitle">0 equipos</p>
       <div id="suggestionsArea"></div>
@@ -6763,7 +6813,7 @@ function renderCart() {
   const actionsDiv = document.createElement('div');
   actionsDiv.style.cssText = 'margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;';
   actionsDiv.innerHTML = `
-    <button class="btn btn-secondary" onclick="goHome()">${ICONS.plus} Agregar otro equipo nuevo</button>
+    <button class="btn btn-secondary btn-big btn-add-more" onclick="goHome()">${ICONS.plus} Agregar otro equipo nuevo</button>
   `;
   itemsEl.appendChild(actionsDiv);
 }
@@ -7661,12 +7711,26 @@ function renderTomas() {
   if (state.tomaForm) {
     html += renderTomaFormHtml();
   } else {
-    // 3. Botón para agregar
-    html += `
-      <button class="btn btn-secondary toma-add-btn" onclick="startToma()">
-        ${ICONS.plus} ${state.tomas.length === 0 ? 'Agregar equipo entregado' : 'Agregar otro equipo entregado'}
-      </button>
-    `;
+    // 3. Botón para agregar — wrapped en question card si no hay tomas todavía
+    if (state.tomas.length === 0) {
+      html += `
+        <div class="toma-question-card">
+          <div class="toma-question-text">
+            <span class="toma-question-q">¿El cliente entrega un usado en parte de pago?</span>
+            <span class="toma-question-sub">Cargalo acá para que figure en el presupuesto.</span>
+          </div>
+          <button class="btn btn-yellow btn-big toma-add-btn" onclick="startToma()">
+            ${ICONS.plus} Sí, agregar equipo entregado
+          </button>
+        </div>
+      `;
+    } else {
+      html += `
+        <button class="btn btn-secondary btn-big toma-add-btn" onclick="startToma()">
+          ${ICONS.plus} Agregar otro equipo entregado
+        </button>
+      `;
+    }
   }
 
   area.innerHTML = html;
