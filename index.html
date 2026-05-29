@@ -2043,6 +2043,51 @@
     .sheet-close-x { top: 10px; left: 10px; width: 40px; height: 40px; font-size: 16px; }
   }
 
+
+  /* === v64: Chips de Stock + Órdenes Colocadas === */
+  .stock-chip {
+    display: inline-block;
+    background: #2D8B3F;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 8px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    vertical-align: 2px;
+    white-space: nowrap;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  }
+  .order-chip {
+    display: inline-block;
+    background: #FBC02D;
+    color: #4A3500;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 4px;
+    margin-left: 6px;
+    letter-spacing: 0.3px;
+    vertical-align: 2px;
+    white-space: nowrap;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  }
+  /* Para que el nombre + chips wrapeen prolijo en pantallas chicas */
+  .model-row-info .name {
+    display: inline;
+  }
+  @media (max-width: 480px) {
+    .stock-chip, .order-chip {
+      font-size: 9px;
+      padding: 2px 5px;
+      margin-left: 4px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -2069,7 +2114,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v63</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v64</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -5495,6 +5540,61 @@ const USED_ESTADO_LABEL = {
 
 
 
+// ============================================================================
+// STOCK_DATA + ORDERS_DATA — disponibilidad de equipos en vivo
+//
+// Este archivo es PLACEHOLDER con datos de muestra hasta que conectemos el
+// Excel real de SharePoint (Lucas tiene acceso).
+//
+// Cuando llegue el archivo real, generamos este JS con extract_stock.py
+// (similar a extract_usados.py). El build_v21.py inyecta estos const en el
+// HTML y la UI renderiza los chips ("3 en stock" / "Llegan 2 en Ago 2026").
+//
+// ESTRUCTURA:
+//   STOCK_DATA[modelCode] = { count: N, ubicaciones?: [string] }
+//   ORDERS_DATA[modelCode] = { count: N, llegada: "Mes YYYY" }
+//
+// El modelCode es el m.modelo de CATALOG (ej: "5060ES", "6135J30GEA").
+// ============================================================================
+
+const STOCK_DATA = {
+  "5060ES":  { count: 3, ubicaciones: ["San Antonio de Areco", "Luján"] },
+  "5060END": { count: 1, ubicaciones: ["Salto"] },
+  "5070ES":  { count: 2, ubicaciones: ["Chivilcoy"] },
+  "6115J30GEA": { count: 1, ubicaciones: ["San Antonio de Areco"] }
+};
+
+const ORDERS_DATA = {
+  "5080ES":     { count: 1, llegada: "Agosto 2026" },
+  "5125E":      { count: 2, llegada: "Octubre 2026" },
+  "6135J30GEA": { count: 1, llegada: "Septiembre 2026" }
+};
+
+
+// Helpers de chips de stock — devuelven HTML inline para inyectar al lado
+// del nombre del modelo en el listado.
+function _renderStockChip(modelCode) {
+  if (typeof STOCK_DATA === 'undefined') return '';
+  const s = STOCK_DATA[modelCode];
+  if (!s || !s.count) return '';
+  const ubi = (s.ubicaciones && s.ubicaciones.length)
+    ? ' (' + s.ubicaciones.join(', ') + ')'
+    : '';
+  return '<span class="stock-chip" title="En stock' + ubi + '">' +
+    s.count + ' en stock' +
+  '</span>';
+}
+
+function _renderOrderChip(modelCode) {
+  if (typeof ORDERS_DATA === 'undefined') return '';
+  const o = ORDERS_DATA[modelCode];
+  if (!o || !o.count) return '';
+  const word = (o.count === 1) ? 'Llega' : 'Llegan';
+  return '<span class="order-chip" title="Orden colocada">' +
+    word + ' ' + o.count + ' en ' + o.llegada +
+  '</span>';
+}
+
 // FAMILIES — agrupa el CATALOG existente en 3 niveles
 // Home (familia) → Línea → Modelo
 
@@ -6545,7 +6645,7 @@ function renderModels(filterText = '') {
     row.innerHTML = `
       <div class="model-row-top">
         <div class="model-row-info">
-          <div class="name">${m.modelo}</div>
+          <div class="name">${m.modelo}${_renderStockChip(m.modelo)}${_renderOrderChip(m.modelo)}</div>
           ${subtitleHtml}
           ${chipsHtml ? `<div class="meta used-spec-row" style="margin-top:6px;">${chipsHtml}</div>` : ''}
         </div>
