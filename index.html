@@ -1321,6 +1321,26 @@
     padding-top: 4px;
   }
 
+
+  /* ===== Marcadores requerido vs opcional en form cliente ===== */
+  .req-mark {
+    color: #C8102E; font-weight: 800; margin-left: 2px;
+  }
+  .opt-mark {
+    color: var(--jd-gray-500); font-weight: 500; font-size: 11px;
+    margin-left: 4px; letter-spacing: 0;
+  }
+  /* Validación visual */
+  .field.is-invalid input {
+    border-color: #C8102E !important; background: #FFEBEE !important;
+  }
+  .field.is-invalid .field-error {
+    display: block;
+    color: #C8102E; font-size: 11px; font-weight: 600;
+    margin-top: 4px;
+  }
+  .field-error { display: none; }
+
 </style>
 </head>
 <body>
@@ -1412,11 +1432,11 @@
       <h3 class="section-title">Datos del cliente y operación</h3>
       <div class="specs-card">
         <div class="form-grid">
-          <div class="field"><label>Cliente *</label><input type="text" id="fClient" placeholder="Razón social o nombre"></div>
-          <div class="field"><label>CUIT / DNI</label><input type="text" id="fCuit" placeholder="(opcional)" inputmode="numeric" pattern="[0-9]*"></div>
-          <div class="field"><label>Localidad</label><input type="text" id="fLoc" placeholder="(opcional)"></div>
-          <div class="field"><label>Teléfono</label><input type="tel" id="fPhone" placeholder="(opcional)" inputmode="tel" autocomplete="tel"></div>
-          <div class="field"><label>Email del cliente</label><input type="email" id="fEmail" placeholder="cliente@ejemplo.com" inputmode="email" autocomplete="email"></div>
+          <div class="field"><label>Cliente <span class="req-mark">*</span></label><input type="text" id="fClient" placeholder="Razón social o nombre"></div>
+          <div class="field"><label>CUIT / DNI <span class="opt-mark">(opcional)</span></label><input type="text" id="fCuit" placeholder="20-XXXXXXXX-X" inputmode="numeric" pattern="[0-9]*"></div>
+          <div class="field"><label>Localidad <span class="opt-mark">(opcional)</span></label><input type="text" id="fLoc" placeholder="Ej: San Antonio de Areco"></div>
+          <div class="field"><label>Teléfono <span class="req-mark">*</span></label><input type="tel" id="fPhone" placeholder="Ej: 2326 421325" inputmode="tel" autocomplete="tel"></div>
+          <div class="field"><label>Email del cliente <span class="req-mark">*</span></label><input type="email" id="fEmail" placeholder="cliente@ejemplo.com" inputmode="email" autocomplete="email"></div>
           <div class="field"><label>N° Presupuesto</label><input type="text" id="fDoc"></div>
           <div class="field"><label>Fecha</label><input type="date" id="fDate"></div>
           <div class="field"><label>Sucursal</label>
@@ -1498,7 +1518,7 @@
 
 const CATALOG = {
   "tractores_3000": {
-    nombre: "Tractores Línea 3000",
+    nombre: "Tractores Línea 3",
     icono: "🚜",
     modelos: [
       { modelo: "3028EN", precio: 22923, specs: { Origen: "—", Tracción: "—", Transmisión: "SyncReverser 8x8", HP: 28, "Rod. Delantero": "5 x 12", "Rod. Trasero": "8,3 x 24", VCR: 1, Conectividad: "NO" } },
@@ -1511,7 +1531,7 @@ const CATALOG = {
   },
 
   "tractores_5000": {
-    nombre: "Tractores Línea 5000",
+    nombre: "Tractores Línea 5",
     icono: "🚜",
     modelos: [
       { modelo: "5045DD", precio: 29733, specs: { Origen: "INDIA", Tracción: "Doble", Transmisión: "Collarín de cambio 8F/4R", HP: 45, "Rod. Delantero": "8,0-18", "Rod. Trasero": "13,6-28", VCR: 1, Conectividad: "SI" } },
@@ -4733,8 +4753,8 @@ const FAMILIES = [
     color: "green",
     icon: "tractor",
     lineas: [
-      { key: "tractores_3000", short: "Línea 3000" },
-      { key: "tractores_5000", short: "Línea 5000" },
+      { key: "tractores_3000", short: "Línea 3" },
+      { key: "tractores_5000", short: "Línea 5" },
       { key: "tractores_6e",   short: "Línea 6E" },
       { key: "tractores_6j",   short: "Línea 6J" },
       { key: "tractores_6m",   short: "Línea 6M" },
@@ -6531,12 +6551,28 @@ function generateSheet() {
     alert('No hay equipos en el carrito. Agregá al menos uno antes de generar la hoja.');
     return;
   }
-  if (!document.getElementById('fClient').value.trim()) {
-    if (!confirm('No cargaste nombre de cliente. ¿Generar igual?')) {
-      goToCart();
-      document.getElementById('fClient').focus();
-      return;
+  // Validación: Cliente, Email y Teléfono son OBLIGATORIOS.
+  const _requiredFields = [
+    { id: 'fClient', label: 'Cliente', validate: v => v.trim().length >= 2 },
+    { id: 'fEmail',  label: 'Email',   validate: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) },
+    { id: 'fPhone',  label: 'Teléfono', validate: v => v.trim().replace(/\D/g, '').length >= 6 },
+  ];
+  const _invalid = [];
+  _requiredFields.forEach(f => {
+    const el = document.getElementById(f.id);
+    const wrap = el ? el.closest('.field') : null;
+    if (wrap) wrap.classList.remove('is-invalid');
+    if (!el || !f.validate(el.value || '')) {
+      _invalid.push(f);
+      if (wrap) wrap.classList.add('is-invalid');
     }
+  });
+  if (_invalid.length > 0) {
+    alert('Faltan datos obligatorios:\n\n' + _invalid.map(f => '• ' + f.label).join('\n') + '\n\nSon necesarios para enviar el presupuesto por email al cliente.');
+    goToCart();
+    const first = document.getElementById(_invalid[0].id);
+    if (first) first.focus();
+    return;
   }
 
   const sellerData = getSelectedSellerData();
@@ -7738,6 +7774,68 @@ async function sharePDFNative() {
   }
 }
 
+
+
+// ============================================================================
+// Cotización USD oficial — auto-fetch desde dolarapi.com (venta del día)
+// Cachea en localStorage por fecha. El usuario puede sobreescribir manualmente.
+// ============================================================================
+
+const USD_API_URL = 'https://dolarapi.com/v1/dolares/oficial';
+
+function _todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+async function fetchUsdDelDia() {
+  const cacheKey = 'proratto_usd_' + _todayKey();
+  // 1) Buscar en cache de hoy
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return Number(cached);
+  } catch {}
+  // 2) Fetch a dolarapi (gratis, CORS open)
+  try {
+    const res = await fetch(USD_API_URL, { mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const venta = Number(data.venta);
+    if (!venta || isNaN(venta)) throw new Error('venta inválida en respuesta');
+    try { localStorage.setItem(cacheKey, String(venta)); } catch {}
+    return venta;
+  } catch (e) {
+    console.warn('Cotización USD failed:', e?.message || e);
+    return null;
+  }
+}
+
+async function autofillUsdRate() {
+  const input = document.getElementById('fUsdRate');
+  if (!input) return;
+  // No sobreescribir si el usuario ya tipeó algo
+  if (input.value && Number(input.value) > 0) return;
+  const venta = await fetchUsdDelDia();
+  if (!venta) return;
+  input.value = venta;
+  // Indicar visualmente que se auto-completó (badge debajo del input)
+  const wrap = input.closest('.field');
+  if (wrap && !wrap.querySelector('.usd-autofill-hint')) {
+    const hint = document.createElement('div');
+    hint.className = 'usd-autofill-hint';
+    hint.textContent = '✓ Cotización oficial del día (dolarapi)';
+    hint.style.cssText = 'font-size:11px; color:var(--jd-green); font-weight:600; margin-top:4px;';
+    wrap.appendChild(hint);
+  }
+  // Dispatch input para que otros listeners (FAB reset, etc.) detecten el cambio
+  input.dispatchEvent(new Event('input'));
+}
+
+// Trigger autofill después de que la app esté visible (post-auth)
+document.addEventListener('DOMContentLoaded', () => {
+  // Pequeño delay para no competir con el load de MSAL/whoami
+  setTimeout(autofillUsdRate, 1200);
+});
 </script>
 </body>
 </html>
