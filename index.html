@@ -1304,6 +1304,23 @@
     .login-btn-microsoft, .login-loading { min-width: 240px; padding: 12px 18px; }
   }
 
+
+  /* ===== Section headers en listado de líneas (HP buckets en Tractores) ===== */
+  .lines-section-header {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--jd-green-darker);
+    padding: 14px 4px 8px;
+    border-bottom: 2px solid var(--jd-yellow);
+    margin-bottom: 2px;
+  }
+  .lines-section-header:first-child {
+    padding-top: 4px;
+  }
+
 </style>
 </head>
 <body>
@@ -5596,24 +5613,72 @@ function renderLines() {
     : 'Elegí una línea para ver sus modelos.';
   const grid = document.getElementById('linesGrid');
   grid.innerHTML = '';
-  fam.lineas.forEach(line => {
+
+  // Helper: rango de HP de una línea (para mostrar en la meta)
+  function lineHpRange(cat) {
+    const hps = (cat.modelos || [])
+      .map(m => Number(m.specs && m.specs.HP))
+      .filter(h => !isNaN(h) && h > 0);
+    if (!hps.length) return null;
+    const min = Math.min(...hps), max = Math.max(...hps);
+    return min === max ? `${min} HP` : `${min}–${max} HP`;
+  }
+
+  // Helper: crea la card de una línea
+  function makeLineCard(line) {
     const cat = CATALOG[line.key];
     const card = document.createElement('button');
     card.className = 'item-card';
     const unitLabel = cat.isUsed
       ? (cat.modelos.length === 1 ? 'unidad' : 'unidades')
       : (cat.modelos.length === 1 ? 'modelo' : 'modelos');
+    const hpRange = !cat.isUsed ? lineHpRange(cat) : null;
+    const metaParts = [];
+    if (hpRange) metaParts.push(hpRange);
+    metaParts.push(`${cat.modelos.length} ${unitLabel}`);
     card.innerHTML = `
       <div style="flex:1;">
         <div class="name">${line.short}</div>
-        <div class="meta">${cat.modelos.length} ${unitLabel}</div>
+        <div class="meta">${metaParts.join(' · ')}</div>
       </div>
       <span class="num-badge">${cat.modelos.length}</span>
       <div class="chev">${ICONS.chevron}</div>
     `;
     card.addEventListener('click', () => selectLine(line.key));
-    grid.appendChild(card);
-  });
+    return card;
+  }
+
+  // Tractores: agrupar por HP en pequeños / medianos / grandes.
+  // Usamos el HP MÍNIMO de cada línea para bucketing (más estable que el max
+  // si una línea tiene 1 modelo grande aislado).
+  if (fam.key === 'tractores') {
+    const groups = [
+      { label: 'Pequeños · Hasta 90 HP',            max: 90,        lineas: [] },
+      { label: 'Medianos · Entre 90 y 190 HP',      max: 190,       lineas: [] },
+      { label: 'Grandes · Más de 190 HP',           max: Infinity,  lineas: [] },
+    ];
+    fam.lineas.forEach(line => {
+      const cat = CATALOG[line.key];
+      const hps = (cat.modelos || [])
+        .map(m => Number(m.specs && m.specs.HP))
+        .filter(h => !isNaN(h) && h > 0);
+      const minHp = hps.length ? Math.min(...hps) : 0;
+      const bucket = groups.find(g => minHp <= g.max);
+      bucket.lineas.push(line);
+    });
+    groups.forEach(g => {
+      if (g.lineas.length === 0) return;
+      const header = document.createElement('div');
+      header.className = 'lines-section-header';
+      header.textContent = g.label;
+      grid.appendChild(header);
+      g.lineas.forEach(line => grid.appendChild(makeLineCard(line)));
+    });
+    return;
+  }
+
+  // Otras familias: cards directas, sin grupos
+  fam.lineas.forEach(line => grid.appendChild(makeLineCard(line)));
 }
 
 function selectLine(lineKey) {
@@ -5776,7 +5841,12 @@ function getModelChips(model, cat) {
     }
     if (s.Linea) {
       const variant = String(s.Linea).match(/\b(Select|Ultimate)\b/i);
-      if (variant) flag(variant[1]);
+      if (variant) {
+        flag(variant[1]);
+        // Ultimate viene con tecnología de Cosecha Predictiva — lo explicitamos
+        // como segundo chip para que sea claro a no-expertos.
+        if (variant[1].toLowerCase() === 'ultimate') flag('Cosecha Predictiva');
+      }
     }
     if (s.PILOTO === 'SI') flag('Piloto');
   }
@@ -5809,7 +5879,10 @@ function getModelChips(model, cat) {
     chips.unshift(`<span class="used-spec spec-origen"><span class="flag-emoji">${ORIGEN_FLAG[s.Origen]}</span>${pais}</span>`);
   }
 
-  return chips.slice(0, 6).join('');
+  // Cosechadoras pueden tener 7 chips (HP + Tracción + Rodado + Platf + Ultimate + Cosecha Predictiva + Piloto).
+  // El resto se queda en 6.
+  const max = isCosech ? 7 : 6;
+  return chips.slice(0, max).join('');
 }
 
 // --- USED rendering ---------------------------------------------------------
