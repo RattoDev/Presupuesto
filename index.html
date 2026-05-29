@@ -1341,6 +1341,34 @@
   }
   .field-error { display: none; }
 
+
+  /* ===== FAB "Crear Presupuesto" — pill grande con texto ===== */
+  .fab.fab-generate {
+    width: auto; min-width: 64px;
+    height: 60px;
+    padding: 0 24px 0 20px;
+    border-radius: 30px;
+    background: var(--jd-yellow);
+    color: var(--jd-green-darker);
+    font-family: inherit;
+    font-size: 15px; font-weight: 800;
+    letter-spacing: 0.2px;
+    display: inline-flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22), 0 3px 6px rgba(0, 0, 0, 0.14);
+  }
+  .fab.fab-generate:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28), 0 5px 10px rgba(0, 0, 0, 0.18);
+  }
+  .fab.fab-generate svg { width: 22px; height: 22px; stroke-width: 2.5; }
+  .fab-generate-text { white-space: nowrap; }
+  /* En mobile super-angosto, achicar un toque */
+  @media (max-width: 380px) {
+    .fab.fab-generate { padding: 0 18px 0 16px; height: 56px; font-size: 14px; }
+    .fab.fab-generate svg { width: 20px; height: 20px; }
+  }
+  /* Cuando el body no está autenticado, ocultar también el nuevo FAB */
+  body:not(.authenticated) > .fab-stack > #fabGenerate { visibility: hidden; }
+
 </style>
 </head>
 <body>
@@ -1494,6 +1522,10 @@
     </button>
     <button class="fab fab-top" id="fabTop" onclick="scrollToTop()" aria-label="Subir">
       <span class="fab-tooltip">Subir</span>
+    </button>
+    <button class="fab fab-generate" id="fabGenerate" onclick="generateSheet()" aria-label="Crear Presupuesto">
+      <span id="fabGenerateIconSlot"></span>
+      <span class="fab-generate-text">Crear Presupuesto</span>
     </button>
   </div>
 
@@ -5400,6 +5432,15 @@ function updateFabReset() {
   const notAtHome = state.view !== 'home';
   if (hasCart || hasClient || hasBranchOrSeller || notAtHome) fabReset.classList.add('visible');
   else fabReset.classList.remove('visible');
+
+  // FAB "Crear Presupuesto": solo cuando hay carrito Y no estás viendo el sheet
+  const fabGen = document.getElementById('fabGenerate');
+  if (fabGen) {
+    const view = (typeof state !== 'undefined' && state.view) || '';
+    const showGen = hasCart && view !== 'sheet';
+    if (showGen) fabGen.classList.add('visible');
+    else fabGen.classList.remove('visible');
+  }
 }
 
 function scrollToTop() {
@@ -5427,6 +5468,8 @@ function injectIcons() {
   // FABs
   setPrepend(document.getElementById('fabTop'), ICONS.arrowUp);
   setPrepend(document.getElementById('fabReset'), ICONS.reset);
+  const _fabGenSlot = document.getElementById('fabGenerateIconSlot');
+  if (_fabGenSlot) _fabGenSlot.innerHTML = ICONS.doc;
 }
 
 function setDefaults() {
@@ -6511,7 +6554,6 @@ function renderCart() {
   actionsDiv.style.cssText = 'margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;';
   actionsDiv.innerHTML = `
     <button class="btn btn-secondary" onclick="goHome()">${ICONS.plus} Agregar otro equipo</button>
-    <button class="btn btn-yellow btn-big" onclick="generateSheet()">${ICONS.doc} Generar hoja</button>
   `;
   itemsEl.appendChild(actionsDiv);
 }
