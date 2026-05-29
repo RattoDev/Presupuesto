@@ -2069,7 +2069,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v62</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v63</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -6989,15 +6989,35 @@ function renderUsedModels(filterText = '') {
       : `<span style="font-size:13px; color: var(--jd-gray-700);">A consultar</span>`;
 
     row.innerHTML = `
-      <div class="model-row-info">
-        <div class="name">${marcaTag}${u.modelo || ''}${u.codigo ? ` <span class="used-codigo">${u.codigo}</span>` : ''}</div>
-        <div class="meta used-meta">${año}${estadoHtml}${horas}${ubiHtml}</div>
-        ${specsHtml ? `<div class="meta used-spec-row">${specsHtml}</div>` : ''}
+      <div class="model-row-top">
+        <div class="model-row-info">
+          <div class="name">${marcaTag}${u.modelo || ''}${u.codigo ? ` <span class="used-codigo">${u.codigo}</span>` : ''}</div>
+          <div class="meta used-meta">${año}${estadoHtml}${horas}${ubiHtml}</div>
+          ${specsHtml ? `<div class="meta used-spec-row">${specsHtml}</div>` : ''}
+        </div>
+        <div class="model-row-price">${priceHtml}</div>
       </div>
-      <div class="model-row-price">${priceHtml}</div>
-      <div style="color: var(--jd-gray-400);">${ICONS.chevron}</div>
+      <div class="model-row-actions">
+        <button type="button" class="model-btn-specs">Ver ficha técnica</button>
+        <button type="button" class="model-btn-add">+ Agregar al presupuesto</button>
+      </div>
     `;
-    row.addEventListener('click', () => selectModel(m));
+    // Click en info area (top) → ver detalle
+    row.querySelector('.model-row-top').addEventListener('click', () => selectModel(m));
+    // Botón "Ver ficha técnica" → ver detalle
+    row.querySelector('.model-btn-specs').addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectModel(m);
+    });
+    // Botón "+ Agregar al presupuesto" → agregar directo (sin opcionales — usados no llevan)
+    row.querySelector('.model-btn-add').addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.familyKey = 'usados';
+      state.lineKey = m.lineKey || state.lineKey;
+      state.model = m;
+      state.selectedOpts.clear();
+      addToCart();
+    });
     return row;
   }
 
