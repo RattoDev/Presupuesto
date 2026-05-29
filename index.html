@@ -1525,6 +1525,16 @@
     50% { transform: translateY(4px); }
   }
 
+
+  /* === Versión de la app en el subtitle del topbar === */
+  .app-version-tag {
+    opacity: 0.65;
+    font-size: 11px;
+    font-weight: 400;
+    margin-left: 2px;
+    letter-spacing: 0.2px;
+  }
+
 </style>
 </head>
 <body>
@@ -1551,7 +1561,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026</p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v56</span></p>
         </div>
       </div>
       <div class="topbar-actions">
