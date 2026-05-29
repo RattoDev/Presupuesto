@@ -2125,7 +2125,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v68</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v69</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -5941,7 +5941,8 @@ function getSuggestion(item) {
 const GLOBAL_RECIPIENTS = {
   gerenteVentas: "clarkmaximiliano@rattohnos.com.ar",
   coordinadorComercial: "carballomariano@rattohnos.com.ar",
-  adminVentas: "tobaldigiuliana@rattohnos.com.ar"
+  adminVentas: "tobaldigiuliana@rattohnos.com.ar",
+  marketing: "marketing@rattohnos.com.ar"
 };
 
 // Gerente de Punto de Venta por sucursal
@@ -7916,10 +7917,11 @@ function getEmailRecipients() {
   // Gerente de PV de la sucursal → TO
   const branchName = d?.client?.branchData?.nombre || d?.client?.branch;
   if (branchName && BRANCH_MANAGERS[branchName]) to.push(BRANCH_MANAGERS[branchName]);
-  // Internos: Gerente de Ventas + Coordinador Comercial + Admin de Ventas → CC
+  // Internos: Gerente de Ventas + Coordinador Comercial + Admin de Ventas + Marketing → CC
   if (GLOBAL_RECIPIENTS.gerenteVentas)        cc.push(GLOBAL_RECIPIENTS.gerenteVentas);
   if (GLOBAL_RECIPIENTS.coordinadorComercial) cc.push(GLOBAL_RECIPIENTS.coordinadorComercial);
   if (GLOBAL_RECIPIENTS.adminVentas)          cc.push(GLOBAL_RECIPIENTS.adminVentas);
+  if (GLOBAL_RECIPIENTS.marketing)            cc.push(GLOBAL_RECIPIENTS.marketing);
   // Deduplicar (por si el vendedor también es el gerente, etc.)
   const seen = new Set();
   const dedupTo = to.filter(e => { const l = e.toLowerCase(); if (seen.has(l)) return false; seen.add(l); return true; });
