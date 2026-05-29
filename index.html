@@ -1799,6 +1799,108 @@
     .cmp-icon { font-size: 14px; }
   }
 
+
+  /* === Alinear selectores y botones con las columnas de la tabla === */
+  .compare-columns {
+    grid-template-columns: 30% 1fr 1fr !important;
+  }
+  .compare-columns .compare-col:first-of-type {
+    grid-column-start: 2;
+  }
+  .compare-actions {
+    display: grid !important;
+    grid-template-columns: 30% 1fr 1fr !important;
+    gap: 14px !important;
+  }
+  .compare-actions .compare-add-btn:first-of-type {
+    grid-column-start: 2;
+  }
+  /* Mobile: revertir a stacked (sin la columna ghost) */
+  @media (max-width: 600px) {
+    .compare-columns {
+      grid-template-columns: 1fr !important;
+    }
+    .compare-actions {
+      grid-template-columns: 1fr !important;
+    }
+    .compare-columns .compare-col:first-of-type,
+    .compare-actions .compare-add-btn:first-of-type {
+      grid-column-start: auto;
+    }
+  }
+
+
+  /* === Tennis-stat winner highlighting === */
+  .compare-cell-winner {
+    background: rgba(54, 124, 43, 0.10) !important;
+    font-weight: 800 !important;
+    color: var(--jd-green-darker) !important;
+    position: relative;
+  }
+  .winner-mark {
+    display: inline-block;
+    color: var(--jd-green);
+    font-weight: 900;
+    margin-right: 4px;
+  }
+  /* En la fila de precio (que ya tiene fondo amarillo), pintar más fuerte */
+  .compare-row-price .compare-cell-winner {
+    background: rgba(54, 124, 43, 0.18) !important;
+  }
+  .head-trophy {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 14px;
+  }
+
+  /* Scorecard tipo tenis (arriba de la tabla) */
+  .compare-scorecard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+    padding: 14px 18px;
+    background: var(--jd-white);
+    border: 2px solid var(--jd-gray-200);
+    border-radius: 12px;
+  }
+  .scorecard-side {
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .scorecard-name {
+    font-size: 13px; font-weight: 700;
+    color: var(--jd-gray-700);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .scorecard-wins {
+    font-size: 38px; font-weight: 900;
+    line-height: 1;
+    color: var(--jd-gray-500);
+  }
+  .scorecard-leader {
+    background: var(--jd-yellow-soft);
+  }
+  .scorecard-leader .scorecard-wins {
+    color: var(--jd-green-darker);
+  }
+  .scorecard-leader .scorecard-name {
+    color: var(--jd-green-darker);
+  }
+  .scorecard-tie .scorecard-wins {
+    color: var(--jd-gray-700);
+  }
+  .scorecard-vs {
+    font-size: 14px; font-weight: 800;
+    color: var(--jd-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
 </style>
 </head>
 <body>
@@ -1825,7 +1927,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v60</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v61</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -8798,6 +8900,230 @@ function renderCompare() {
 
   tableEl.innerHTML = '<div class="compare-table-card"><table class="compare-table">' +
     '<thead><tr><th></th><th>' + mA.modelo + '</th><th>' + mB.modelo + '</th></tr></thead>' +
+    '<tbody>' + rowsHtml + '</tbody>' +
+  '</table></div>';
+
+  actionsEl.innerHTML =
+    '<button class="btn btn-yellow btn-big compare-add-btn" onclick="compareAddToCart(\'A\')">' +
+      '+ Agregar ' + mA.modelo + ' al presupuesto' +
+    '</button>' +
+    '<button class="btn btn-yellow btn-big compare-add-btn" onclick="compareAddToCart(\'B\')">' +
+      '+ Agregar ' + mB.modelo + ' al presupuesto' +
+    '</button>';
+}
+
+
+
+// ============================================================================
+// COMPARADOR — TENNIS STATS STYLE
+// Re-override de renderCompare con detección de "ganador" por spec.
+// Reglas:
+//   - Precio: el más barato gana (lower is better)
+//   - HP / Potencia / numérico: el más alto gana
+//   - SI / NO: SI gana
+//   - Tracción Doble > Simple; 4x4 > 4x2
+//   - Texto distinto sin orden claro: sin ganador (sólo diff highlight)
+// ============================================================================
+
+const _TRACCION_WINS = ['Doble', '4x4', 'AWD', 'DT', '4WD'];
+const _LOWER_IS_BETTER = ['Precio'];
+
+function _compareExtractNumber(v) {
+  if (v == null) return null;
+  if (typeof v === 'number') return v;
+  // Limpiar "USD ", "HP", "L", etc. para quedarnos con el primer número
+  const m = String(v).replace(/\./g, '').replace(',', '.').match(/-?\d+(\.\d+)?/);
+  if (!m) return null;
+  const n = parseFloat(m[0]);
+  return isNaN(n) ? null : n;
+}
+
+function _compareSpecWinner(key, vA, vB) {
+  if (String(vA) === String(vB)) return null;
+  const sA = String(vA).trim();
+  const sB = String(vB).trim();
+  if (sA === '—' || sB === '—') return null; // No comparar contra valores vacíos
+
+  // Reglas específicas
+  if (_LOWER_IS_BETTER.includes(key)) {
+    const nA = _compareExtractNumber(vA), nB = _compareExtractNumber(vB);
+    if (nA != null && nB != null && nA !== nB) return nA < nB ? 'A' : 'B';
+  }
+  if (/tracci/i.test(key)) {
+    const aWins = _TRACCION_WINS.includes(sA);
+    const bWins = _TRACCION_WINS.includes(sB);
+    if (aWins && !bWins) return 'A';
+    if (bWins && !aWins) return 'B';
+  }
+  // SI / NO booleanos
+  const uA = sA.toUpperCase(), uB = sB.toUpperCase();
+  const isBool = (s) => (s === 'SI' || s === 'SÍ' || s === 'NO');
+  if (isBool(uA) && isBool(uB) && uA !== uB) {
+    const aIsYes = (uA === 'SI' || uA === 'SÍ');
+    return aIsYes ? 'A' : 'B';
+  }
+  // Numérico (default: higher is better)
+  const nA = _compareExtractNumber(vA), nB = _compareExtractNumber(vB);
+  if (nA != null && nB != null && nA !== nB) return nA > nB ? 'A' : 'B';
+
+  return null; // sin ganador objetivo
+}
+
+// Re-override renderCompare para usar la lógica de winner detection en la tabla
+function renderCompare() {
+  _populateCompareFamilySelect();
+  const colsEl = document.getElementById('compareColumns');
+  const tableEl = document.getElementById('compareTableWrap');
+  const actionsEl = document.getElementById('compareActions');
+  if (!colsEl || !tableEl || !actionsEl) return;
+
+  if (!compareState.familyKey) {
+    colsEl.innerHTML = '<div class="compare-hint">Elegí una familia arriba para empezar a comparar.</div>';
+    tableEl.innerHTML = '';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  const fam = FAMILIES.find(f => f.key === compareState.familyKey);
+  if (!fam) return;
+
+  const linesWithModels = fam.lineas.filter(l => {
+    const cat = CATALOG[l.key];
+    return cat && cat.modelos && cat.modelos.length > 0;
+  });
+
+  const onlyOneLine = (linesWithModels.length === 1);
+  if (onlyOneLine) {
+    if (!compareState.A_line) compareState.A_line = linesWithModels[0].key;
+    if (!compareState.B_line) compareState.B_line = linesWithModels[0].key;
+  }
+
+  function renderColumn(side) {
+    const selLine = compareState[side + '_line'];
+    const sel = compareState[side];
+    const selModel = sel ? sel.modelo : null;
+
+    let html = '<div class="compare-col"><label class="compare-col-label">Equipo ' + side + '</label>';
+
+    if (!onlyOneLine) {
+      const lineOpts = linesWithModels.map(l =>
+        '<option value="' + l.key + '"' + (l.key === selLine ? ' selected' : '') + '>' + l.short + '</option>'
+      ).join('');
+      html += '<select class="compare-model-select" onchange="compareSelectLine(\'' + side + '\', this.value)">' +
+        '<option value="">— Elegí línea —</option>' + lineOpts +
+      '</select>';
+    }
+
+    if (selLine) {
+      const cat = CATALOG[selLine];
+      const modelOpts = (cat.modelos || []).map(m =>
+        '<option value="' + m.modelo + '"' + (m.modelo === selModel ? ' selected' : '') + '>' + m.modelo + '</option>'
+      ).join('');
+      html += '<select class="compare-model-select" onchange="compareSelectModel(\'' + side + '\', this.value)">' +
+        '<option value="">— Elegí modelo —</option>' + modelOpts +
+      '</select>';
+    }
+
+    if (sel) {
+      const cat = CATALOG[sel.lineKey];
+      const m = cat && cat.modelos ? cat.modelos.find(x => x.modelo === sel.modelo) : null;
+      if (m) {
+        const lineShort = (linesWithModels.find(l => l.key === sel.lineKey) || {}).short || '';
+        html += '<div class="compare-model-card">' +
+          '<div class="compare-model-line">' + lineShort + '</div>' +
+          '<div class="compare-model-name">' + m.modelo + '</div>' +
+          '<div class="compare-model-price">' + (m.precio > 0 ? fmtUSD(m.precio) : 'Precio a consultar') + '</div>' +
+        '</div>';
+      }
+    } else if (selLine) {
+      html += '<div class="compare-model-empty">Elegí un modelo</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  colsEl.innerHTML = renderColumn('A') + renderColumn('B');
+
+  if (!compareState.A || !compareState.B) {
+    tableEl.innerHTML = '<div class="compare-hint">Elegí ambos equipos para ver la comparación.</div>';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  const catA = CATALOG[compareState.A.lineKey];
+  const catB = CATALOG[compareState.B.lineKey];
+  const mA = catA && catA.modelos ? catA.modelos.find(x => x.modelo === compareState.A.modelo) : null;
+  const mB = catB && catB.modelos ? catB.modelos.find(x => x.modelo === compareState.B.modelo) : null;
+
+  if (!mA || !mB) {
+    tableEl.innerHTML = '<div class="compare-hint">No encontré uno de los modelos. Probá de nuevo.</div>';
+    actionsEl.innerHTML = '';
+    return;
+  }
+
+  const specKeys = [];
+  Object.keys(mA.specs || {}).forEach(k => { if (!specKeys.includes(k)) specKeys.push(k); });
+  Object.keys(mB.specs || {}).forEach(k => { if (!specKeys.includes(k)) specKeys.push(k); });
+
+  // Función para renderizar una celda con marker de winner si corresponde
+  function _cellHtml(value, isWinner) {
+    if (isWinner) {
+      return '<td class="compare-cell-winner"><span class="winner-mark">✓</span> ' + value + '</td>';
+    }
+    return '<td>' + value + '</td>';
+  }
+
+  let rowsHtml = '';
+  // Fila de Precio con detección de winner
+  const priceWinner = _compareSpecWinner('Precio', mA.precio, mB.precio);
+  rowsHtml += '<tr class="compare-row-price">' +
+    '<th>Precio</th>' +
+    _cellHtml(mA.precio > 0 ? fmtUSD(mA.precio) : '—', priceWinner === 'A') +
+    _cellHtml(mB.precio > 0 ? fmtUSD(mB.precio) : '—', priceWinner === 'B') +
+  '</tr>';
+
+  // Resto de specs
+  let winsA = (priceWinner === 'A') ? 1 : 0;
+  let winsB = (priceWinner === 'B') ? 1 : 0;
+  let comparable = (priceWinner !== null) ? 1 : 0;
+
+  specKeys.forEach(key => {
+    const vA = (mA.specs && mA.specs[key] != null) ? mA.specs[key] : '—';
+    const vB = (mB.specs && mB.specs[key] != null) ? mB.specs[key] : '—';
+    const winner = _compareSpecWinner(key, vA, vB);
+    if (winner === 'A') winsA++;
+    if (winner === 'B') winsB++;
+    if (winner !== null) comparable++;
+    const diffClass = (String(vA) !== String(vB)) ? ' class="compare-row-diff"' : '';
+    rowsHtml += '<tr' + diffClass + '>' +
+      '<th>' + key + '</th>' +
+      _cellHtml(vA, winner === 'A') +
+      _cellHtml(vB, winner === 'B') +
+    '</tr>';
+  });
+
+  // Header con marcadores de scorecard
+  const aLabel = mA.modelo + (winsA > winsB ? ' <span class="head-trophy">🏆</span>' : '');
+  const bLabel = mB.modelo + (winsB > winsA ? ' <span class="head-trophy">🏆</span>' : '');
+
+  // Scorecard arriba — estilo tenis
+  const scoreCardHtml = (comparable > 0)
+    ? '<div class="compare-scorecard">' +
+        '<div class="scorecard-side scorecard-' + (winsA > winsB ? 'leader' : (winsA < winsB ? 'trailer' : 'tie')) + '">' +
+          '<div class="scorecard-name">' + mA.modelo + '</div>' +
+          '<div class="scorecard-wins">' + winsA + '</div>' +
+        '</div>' +
+        '<div class="scorecard-vs">vs</div>' +
+        '<div class="scorecard-side scorecard-' + (winsB > winsA ? 'leader' : (winsB < winsA ? 'trailer' : 'tie')) + '">' +
+          '<div class="scorecard-name">' + mB.modelo + '</div>' +
+          '<div class="scorecard-wins">' + winsB + '</div>' +
+        '</div>' +
+      '</div>'
+    : '';
+
+  tableEl.innerHTML = scoreCardHtml + '<div class="compare-table-card"><table class="compare-table">' +
+    '<thead><tr><th></th><th>' + aLabel + '</th><th>' + bLabel + '</th></tr></thead>' +
     '<tbody>' + rowsHtml + '</tbody>' +
   '</table></div>';
 
