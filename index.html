@@ -2114,7 +2114,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v64</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v65</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -5541,33 +5541,82 @@ const USED_ESTADO_LABEL = {
 
 
 // ============================================================================
-// STOCK_DATA + ORDERS_DATA — disponibilidad de equipos en vivo
+// STOCK_DATA + ORDERS_DATA — generado por extract_stock.py
 //
-// Este archivo es PLACEHOLDER con datos de muestra hasta que conectemos el
-// Excel real de SharePoint (Lucas tiene acceso).
+// Source: Stock & Ventas Maquinaria Nueva.xlsx (pestañas 'Stock' + 'Órdenes Colocadas')
+// Generado: 2026-05-29 14:42
 //
-// Cuando llegue el archivo real, generamos este JS con extract_stock.py
-// (similar a extract_usados.py). El build_v21.py inyecta estos const en el
-// HTML y la UI renderiza los chips ("3 en stock" / "Llegan 2 en Ago 2026").
-//
-// ESTRUCTURA:
-//   STOCK_DATA[modelCode] = { count: N, ubicaciones?: [string] }
-//   ORDERS_DATA[modelCode] = { count: N, llegada: "Mes YYYY" }
-//
-// El modelCode es el m.modelo de CATALOG (ej: "5060ES", "6135J30GEA").
+// NO EDITAR A MANO — regenerar con `python3 extract_stock.py`
 // ============================================================================
 
 const STOCK_DATA = {
-  "5060ES":  { count: 3, ubicaciones: ["San Antonio de Areco", "Luján"] },
-  "5060END": { count: 1, ubicaciones: ["Salto"] },
-  "5070ES":  { count: 2, ubicaciones: ["Chivilcoy"] },
-  "6115J30GEA": { count: 1, ubicaciones: ["San Antonio de Areco"] }
+  "3036E": { count: 9, ubicaciones: ["Areco", "Arrecifes", "Chivilcoy", "La Plata", "Saladillo", "Salto"] },
+  "3036EN": { count: 11, ubicaciones: ["Areco", "Arrecifes", "Chivilcoy", "La Plata", "Luján", "Saladillo", "Salto"] },
+  "4045TJ31": { count: 2, ubicaciones: ["Areco", "Chivilcoy"] },
+  "5060END": { count: 1, ubicaciones: ["Arrecifes"] },
+  "5076EFD": { count: 3, ubicaciones: ["Areco"] },
+  "5080END": { count: 1, ubicaciones: ["Luján"] },
+  "5090 E38": { count: 2, ubicaciones: ["Areco", "Salto"] },
+  "6115J38GEA": { count: 1, ubicaciones: ["Arrecifes"] },
+  "6150J38GEA": { count: 1, ubicaciones: ["Saladillo"] },
+  "7M215": { count: 2, ubicaciones: ["Arrecifes", "Luján"] },
+  "C350L": { count: 1, ubicaciones: ["Areco"] },
+  "C500L": { count: 1, ubicaciones: ["Salto"] },
+  "GATOR HPX815": { count: 1, ubicaciones: ["Areco"] },
+  "GATOR TX": { count: 2, ubicaciones: ["Areco", "Luján"] },
+  "M616C": { count: 1, ubicaciones: ["Areco"] },
+  "N536": { count: 1, ubicaciones: ["Areco"] },
+  "N542": { count: 1, ubicaciones: ["Salto"] },
+  "S100": { count: 1, ubicaciones: ["La Plata"] },
+  "S180": { count: 6, ubicaciones: ["Areco", "Arrecifes", "Chivilcoy", "La Plata", "Luján", "Salto"] },
+  "Z530M": { count: 2, ubicaciones: ["Areco", "Luján"] }
 };
 
 const ORDERS_DATA = {
-  "5080ES":     { count: 1, llegada: "Agosto 2026" },
-  "5125E":      { count: 2, llegada: "Octubre 2026" },
-  "6135J30GEA": { count: 1, llegada: "Septiembre 2026" }
+  "220SL": { count: 3, llegada: "Julio 2026" },
+  "3036E": { count: 18, llegada: "Julio 2026" },
+  "440R": { count: 2, llegada: "Septiembre 2026" },
+  "461M": { count: 9, llegada: "Junio 2026" },
+  "461R": { count: 1, llegada: "Junio 2026" },
+  "490 PRO": { count: 2, llegada: "Octubre 2026" },
+  "5045DD": { count: 5, llegada: "Julio 2026" },
+  "5055EDS": { count: 2, llegada: "Junio 2026" },
+  "5060END": { count: 1, llegada: "Agosto 2026" },
+  "5060ES": { count: 2, llegada: "Junio 2026" },
+  "5065EDS": { count: 2, llegada: "Octubre 2026" },
+  "5075EDS": { count: 3, llegada: "Octubre 2026" },
+  "5090 E30": { count: 2, llegada: "Julio 2026" },
+  "5090E30C": { count: 1, llegada: "Agosto 2026" },
+  "520M": { count: 2, llegada: "Octubre 2026" },
+  "561M": { count: 2, llegada: "Septiembre 2026" },
+  "60 in": { count: 2, llegada: "Octubre 2026" },
+  "6115J38GEA": { count: 2, llegada: "Junio 2026" },
+  "6120E": { count: 2, llegada: "Agosto 2026" },
+  "6150J38GEA": { count: 4, llegada: "Mayo 2026" },
+  "6170J38GA": { count: 1, llegada: "Agosto 2026" },
+  "7M200": { count: 2, llegada: "Agosto 2026" },
+  "7M230": { count: 4, llegada: "Agosto 2026" },
+  "8250RB": { count: 1, llegada: "Junio 2026" },
+  "8270RB": { count: 2, llegada: "Agosto 2026" },
+  "8320R": { count: 2, llegada: "Junio 2026" },
+  "9R390": { count: 1, llegada: "Junio 2026" },
+  "C400": { count: 2, llegada: "Septiembre 2026" },
+  "F9 700": { count: 2, llegada: "Octubre 2026" },
+  "GATOR HPX815": { count: 1, llegada: "Junio 2026" },
+  "GATOR TX": { count: 2, llegada: "Septiembre 2026" },
+  "RDF 40": { count: 4, llegada: "Junio 2026" },
+  "S100": { count: 15, llegada: "Octubre 2026" },
+  "S140": { count: 25, llegada: "Septiembre 2026" },
+  "S7 600 DD": { count: 1, llegada: "Octubre 2026" },
+  "S7 700 DDPD": { count: 1, llegada: "Mayo 2026" },
+  "S7 700 SDM": { count: 1, llegada: "Octubre 2026" },
+  "S7 800 DD": { count: 1, llegada: "Julio 2026" },
+  "X350": { count: 10, llegada: "Noviembre 2026" },
+  "X750": { count: 2, llegada: "Octubre 2026" },
+  "Z325E": { count: 16, llegada: "Octubre 2026" },
+  "Z530M": { count: 17, llegada: "Septiembre 2026" },
+  "Z950M": { count: 6, llegada: "Junio 2026" },
+  "Z994R": { count: 5, llegada: "Junio 2026" }
 };
 
 
