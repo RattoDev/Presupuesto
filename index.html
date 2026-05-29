@@ -1576,6 +1576,34 @@
   }
   .toma-question-card .btn { width: 100%; }
 
+
+  /* === Unificar tamaños de los 3 botones de acción del carrito === */
+  .btn-add-more,
+  .step-next-cue {
+    width: 100%;
+    max-width: 480px;
+    min-height: 56px;
+    box-sizing: border-box;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .step-divider { text-align: center; }
+  .step-next-cue {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* La toma-question-card es full-width naturalmente, pero su botón
+     interno usa la misma altura para verse consistente */
+  .toma-question-card .toma-add-btn {
+    min-height: 56px;
+  }
+  /* El actionsDiv que envuelve "Agregar otro equipo nuevo" debe respetar
+     el max-width del botón pero quedar centrado */
+  .cart-totals + div {
+    align-items: center;
+  }
+
 </style>
 </head>
 <body>
@@ -1602,7 +1630,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v57</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v58</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -1679,8 +1707,7 @@
         </div>
       </div>
 
-      <h3 class="section-title step-title"><span class="step-num">2</span> Equipos entregados como parte de pago <span class="step-optional">(opcional)</span></h3>
-      <p class="panel-subtitle">Si el cliente entrega usados, cargá sus datos para que figuren en el presupuesto. No afecta el total (el valor de toma se acuerda aparte).</p>
+      <h3 class="section-title step-title"><span class="step-num">2</span> Equipos entregados <span class="step-optional">(opcional)</span></h3>
       <div id="tomasArea"></div>
 
       <h3 class="section-title step-title"><span class="step-num">3</span> Datos del cliente y operación</h3>
@@ -7717,7 +7744,7 @@ function renderTomas() {
         <div class="toma-question-card">
           <div class="toma-question-text">
             <span class="toma-question-q">¿El cliente entrega un usado en parte de pago?</span>
-            <span class="toma-question-sub">Cargalo acá para que figure en el presupuesto.</span>
+            <span class="toma-question-sub">No afecta el total — el valor de toma se acuerda aparte.</span>
           </div>
           <button class="btn btn-yellow btn-big toma-add-btn" onclick="startToma()">
             ${ICONS.plus} Sí, agregar equipo entregado
