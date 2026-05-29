@@ -302,17 +302,19 @@
 
   .add-cart-cta {
     display: flex; gap: 14px; align-items: center;
-    background: var(--jd-yellow-soft);
-    border: 2px dashed var(--jd-yellow-dark);
+    background: var(--jd-yellow);
+    border: none;
     border-radius: var(--radius);
-    padding: 16px 20px;
+    padding: 18px 22px;
     margin: 18px 0;
     cursor: pointer;
     transition: all 0.15s;
     width: 100%;
     text-align: left;
+    box-shadow: 0 4px 0 var(--jd-yellow-dark), 0 6px 16px rgba(0,0,0,0.08);
   }
-  .add-cart-cta:hover { background: var(--jd-yellow); border-style: solid; }
+  .add-cart-cta:hover { background: #FFD92E; transform: translateY(-1px); }
+  .add-cart-cta:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--jd-yellow-dark); }
   .add-cart-cta-icon {
     width: 44px; height: 44px;
     background: var(--jd-green); color: var(--jd-white);
@@ -1368,6 +1370,58 @@
   }
   /* Cuando el body no está autenticado, ocultar también el nuevo FAB */
   body:not(.authenticated) > .fab-stack > #fabGenerate { visibility: hidden; }
+
+
+  /* === Listado de modelos: layout columna + 2 botones por renglón === */
+  .model-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  .model-row-top {
+    display: flex; gap: 14px; align-items: center;
+    padding: 14px 16px 12px;
+    cursor: pointer;
+  }
+  .model-row-top:hover { background: var(--jd-gray-50); }
+  .model-row-actions {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 8px;
+    padding: 0 12px 12px;
+  }
+  .model-btn-add, .model-btn-specs {
+    border: none; cursor: pointer;
+    font-family: inherit; font-weight: 700;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px;
+  }
+  .model-btn-add {
+    background: var(--jd-yellow);
+    color: var(--jd-green-darker);
+    box-shadow: 0 2px 0 var(--jd-yellow-dark);
+  }
+  .model-btn-add:hover { background: #FFD92E; transform: translateY(-1px); }
+  .model-btn-add:active { transform: translateY(1px); box-shadow: none; }
+  .model-btn-specs {
+    background: var(--jd-white);
+    color: var(--jd-green-darker);
+    border: 2px solid var(--jd-gray-300);
+  }
+  .model-btn-specs:hover { border-color: var(--jd-green); background: var(--jd-gray-50); }
+
+  /* En móvil chico: stack vertical para tocar más cómodo */
+  @media (max-width: 420px) {
+    .model-row-actions {
+      grid-template-columns: 1fr;
+    }
+  }
 
 </style>
 </head>
@@ -5821,17 +5875,37 @@ function renderModels(filterText = '') {
     const chipsHtml = (typeof getModelChips === 'function') ? getModelChips(m, cat) : '';
     const subtitleHtml = m.subtitle ? `<div class="meta">${m.subtitle}</div>` : '';
     row.innerHTML = `
-      <div class="model-row-info">
-        <div class="name">${m.modelo}</div>
-        ${subtitleHtml}
-        ${chipsHtml ? `<div class="meta used-spec-row" style="margin-top:6px;">${chipsHtml}</div>` : ''}
+      <div class="model-row-top">
+        <div class="model-row-info">
+          <div class="name">${m.modelo}</div>
+          ${subtitleHtml}
+          ${chipsHtml ? `<div class="meta used-spec-row" style="margin-top:6px;">${chipsHtml}</div>` : ''}
+        </div>
+        <div class="model-row-price">${fmtUSD(m.precio)}</div>
       </div>
-      <div class="model-row-price">${fmtUSD(m.precio)}</div>
-      <div style="color: var(--jd-gray-400);">${ICONS.chevron}</div>
+      <div class="model-row-actions">
+        <button type="button" class="model-btn-add">+ Agregar al presupuesto</button>
+        <button type="button" class="model-btn-specs">Ver ficha técnica</button>
+      </div>
     `;
-    row.addEventListener('click', () => {
+    // Click en info area (top) → ver detalle
+    row.querySelector('.model-row-top').addEventListener('click', () => {
       state._pendingFilter = null;
       selectModel(m);
+    });
+    // Botón "Ver ficha técnica" → ver detalle
+    row.querySelector('.model-btn-specs').addEventListener('click', (e) => {
+      e.stopPropagation();
+      state._pendingFilter = null;
+      selectModel(m);
+    });
+    // Botón "+ Agregar al presupuesto" → agregar directo y mostrar carrito
+    row.querySelector('.model-btn-add').addEventListener('click', (e) => {
+      e.stopPropagation();
+      state._pendingFilter = null;
+      state.model = m;
+      state.selectedOpts.clear();
+      addToCart();
     });
     listEl.appendChild(row);
   });
@@ -6350,7 +6424,7 @@ function renderUsedDetail() {
     <button class="add-cart-cta" onclick="addToCart()">
       <div class="add-cart-cta-icon">${ICONS.cartPlus}</div>
       <div class="add-cart-cta-text">
-        <div class="title">Sumar al presupuesto · ${m.precio > 0 ? fmtUSD(m.precio) : 'Precio a consultar'}</div>
+        <div class="title">Agregar al presupuesto · ${m.precio > 0 ? fmtUSD(m.precio) : 'Precio a consultar'}</div>
         <div class="sub">Podés combinar usados y nuevos en el mismo presupuesto.</div>
       </div>
       <div class="chev">${ICONS.chevron}</div>
@@ -6433,7 +6507,7 @@ function renderDetail() {
     <button class="add-cart-cta" onclick="addToCart()">
       <div class="add-cart-cta-icon">${ICONS.cartPlus}</div>
       <div class="add-cart-cta-text">
-        <div class="title">Sumar al presupuesto · ${fmtUSD(total)}</div>
+        <div class="title">Agregar al presupuesto · ${fmtUSD(total)}</div>
         <div class="sub">Después podés seguir agregando más equipos (cargador, carro, plataforma…)</div>
       </div>
       <div class="chev">${ICONS.chevron}</div>
