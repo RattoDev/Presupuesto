@@ -2177,6 +2177,14 @@
     line-height: 1.4;
   }
 
+
+  /* === v72: campo obligatorio válido → verde === */
+  .field.is-valid input,
+  .field.is-valid select {
+    border-color: #2D8B3F !important;
+    background: #E8F5E9 !important;
+  }
+
 </style>
 </head>
 <body>
@@ -2203,7 +2211,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v71</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v72</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -6081,8 +6089,8 @@ const BRANCHES = {
     direccion: "Ex Ruta 8 Km. 112.6",
     cp: "2760",
     provincia: "Buenos Aires",
-    telefono: "+54 2326 456001",
-    telefonoRaw: "+542326456001",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: null,
     whatsappRaw: null,
     email: "info@rattohnos.com.ar",
@@ -6094,8 +6102,8 @@ const BRANCHES = {
     direccion: "Ruta 7 Km. 70.6",
     cp: "6700",
     provincia: "Buenos Aires",
-    telefono: "+54 2323 422776",
-    telefonoRaw: "+542323422776",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2325 685785",
     whatsappRaw: "5492325685785",
     email: "info@rattohnos.com.ar",
@@ -6107,8 +6115,8 @@ const BRANCHES = {
     direccion: "Ruta 51 Km. 59.6",
     cp: "2740",
     provincia: "Buenos Aires",
-    telefono: "+54 2478 451660",
-    telefonoRaw: "+542478451660",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2478 472405",
     whatsappRaw: "5492478472405",
     email: "info@rattohnos.com.ar",
@@ -6120,8 +6128,8 @@ const BRANCHES = {
     direccion: "Ruta 32 y Saavedra",
     cp: "B2741IEM",
     provincia: "Buenos Aires",
-    telefono: "+54 2474 422787",
-    telefonoRaw: "+542474422787",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2326 472702",
     whatsappRaw: "5492326472702",
     email: "info@rattohnos.com.ar",
@@ -6133,8 +6141,8 @@ const BRANCHES = {
     direccion: "Ruta 5 Km. 156.5",
     cp: "B6620",
     provincia: "Buenos Aires",
-    telefono: "+54 9 2346 303177",
-    telefonoRaw: "+5492346303177",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2346 303177",
     whatsappRaw: "5492346303177",
     email: "info@rattohnos.com.ar",
@@ -6146,8 +6154,8 @@ const BRANCHES = {
     direccion: "Ruta 205 Km. 179",
     cp: "7260",
     provincia: "Buenos Aires",
-    telefono: "+54 9 2326 500195",
-    telefonoRaw: "+5492326500195",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2326 500195",
     whatsappRaw: "5492326500195",
     email: "info@rattohnos.com.ar",
@@ -6159,8 +6167,8 @@ const BRANCHES = {
     direccion: "Av. 44 4548",
     cp: "1901",
     provincia: "Buenos Aires",
-    telefono: "+54 9 2326 424726",
-    telefonoRaw: "+5492326424726",
+    telefono: "ExpertConnect +54 9 2326 423653",
+    telefonoRaw: "+5492326423653",
     whatsapp: "+54 9 2326 424726",
     whatsappRaw: "5492326424726",
     email: "info@rattohnos.com.ar",
@@ -7671,10 +7679,12 @@ function generateSheet() {
   _requiredFields.forEach(f => {
     const el = document.getElementById(f.id);
     const wrap = el ? el.closest('.field') : null;
-    if (wrap) wrap.classList.remove('is-invalid');
+    if (wrap) wrap.classList.remove('is-invalid', 'is-valid');
     if (!el || !f.validate(el.value || '')) {
       _invalid.push(f);
       if (wrap) wrap.classList.add('is-invalid');
+    } else {
+      if (wrap) wrap.classList.add('is-valid');
     }
   });
   if (_invalid.length > 0) {
@@ -8027,24 +8037,26 @@ function buildEmailBody() {
 function getEmailRecipients() {
   const d = window._lastSheetData;
   const to = [];
-  const cc = [];
+  const bcc = [];
   // Email del cliente → TO (destinatario principal del presupuesto)
   if (d?.client?.email) to.push(d.client.email);
-  // Vendedor (si tiene email cargado) → TO
+  // Vendedor (si tiene email cargado) → TO (visible para el cliente)
   if (d?.client?.sellerData?.email) to.push(d.client.sellerData.email);
-  // Gerente de PV de la sucursal → TO
+  // Gerente de PV de la sucursal → BCC (oculto para el cliente)
   const branchName = d?.client?.branchData?.nombre || d?.client?.branch;
-  if (branchName && BRANCH_MANAGERS[branchName]) to.push(BRANCH_MANAGERS[branchName]);
-  // Internos: Gerente de Ventas + Coordinador Comercial + Admin de Ventas + Marketing → CC
-  if (GLOBAL_RECIPIENTS.gerenteVentas)        cc.push(GLOBAL_RECIPIENTS.gerenteVentas);
-  if (GLOBAL_RECIPIENTS.coordinadorComercial) cc.push(GLOBAL_RECIPIENTS.coordinadorComercial);
-  if (GLOBAL_RECIPIENTS.adminVentas)          cc.push(GLOBAL_RECIPIENTS.adminVentas);
-  if (GLOBAL_RECIPIENTS.marketing)            cc.push(GLOBAL_RECIPIENTS.marketing);
-  // Deduplicar (por si el vendedor también es el gerente, etc.)
+  if (branchName && BRANCH_MANAGERS[branchName]) bcc.push(BRANCH_MANAGERS[branchName]);
+  // Internos: Gerente de Ventas + Coordinador Comercial + Admin de Ventas + Marketing → BCC
+  // (ocultos: el cliente solo debe ver presupuestos@ y el email del vendedor)
+  if (GLOBAL_RECIPIENTS.gerenteVentas)        bcc.push(GLOBAL_RECIPIENTS.gerenteVentas);
+  if (GLOBAL_RECIPIENTS.coordinadorComercial) bcc.push(GLOBAL_RECIPIENTS.coordinadorComercial);
+  if (GLOBAL_RECIPIENTS.adminVentas)          bcc.push(GLOBAL_RECIPIENTS.adminVentas);
+  if (GLOBAL_RECIPIENTS.marketing)            bcc.push(GLOBAL_RECIPIENTS.marketing);
+  // Deduplicar: TO primero, después BCC sin repetir lo que ya está en TO
+  // (ej: si el vendedor también es el gerente de PV, no le mandamos 2 veces).
   const seen = new Set();
   const dedupTo = to.filter(e => { const l = e.toLowerCase(); if (seen.has(l)) return false; seen.add(l); return true; });
-  const dedupCc = cc.filter(e => { const l = e.toLowerCase(); if (seen.has(l)) return false; seen.add(l); return true; });
-  return { to: dedupTo, cc: dedupCc };
+  const dedupBcc = bcc.filter(e => { const l = e.toLowerCase(); if (seen.has(l)) return false; seen.add(l); return true; });
+  return { to: dedupTo, cc: [], bcc: dedupBcc };
 }
 
 const WORKER_BASE     = 'https://presupuestos-email.lucas-ivancevich.workers.dev';
@@ -8286,9 +8298,10 @@ document.addEventListener('DOMContentLoaded', () => { applyAuthIdentity(); });
 
 
 
-function _fallbackMailto(to, cc, subject, body) {
+function _fallbackMailto(to, cc, bcc, subject, body) {
   const params = [];
-  if (cc.length) params.push('cc=' + cc.join(','));
+  if (cc && cc.length)  params.push('cc=' + cc.join(','));
+  if (bcc && bcc.length) params.push('bcc=' + bcc.join(','));
   params.push('subject=' + encodeURIComponent(subject));
   params.push('body=' + encodeURIComponent(body));
   window.location.href = 'mailto:' + to.join(',') + '?' + params.join('&');
@@ -8317,8 +8330,8 @@ async function _generatePDFAttachment() {
 }
 
 async function shareEmail() {
-  const { to, cc } = getEmailRecipients();
-  if (to.length === 0 && cc.length === 0) {
+  const { to, cc, bcc } = getEmailRecipients();
+  if (to.length === 0 && cc.length === 0 && bcc.length === 0) {
     alert('No hay destinatarios cargados para este presupuesto. Verificá la sucursal y el vendedor.');
     return;
   }
@@ -8354,6 +8367,7 @@ async function shareEmail() {
   try {
     const payload = { to, subject, body, bodyType: 'text' };
     if (cc.length)   payload.cc = cc;
+    if (bcc.length)  payload.bcc = bcc;
     if (replyTo)     payload.replyTo = replyTo;
     if (attachment)  payload.attachments = [attachment];
 
@@ -8366,13 +8380,13 @@ async function shareEmail() {
     if (!res.ok || !data.ok) {
       throw new Error(data.detail || data.error || ('HTTP ' + res.status));
     }
-    const total = to.length + cc.length;
+    const total = to.length + cc.length + bcc.length;
     const pdfNote = attachment ? ' con PDF adjunto' : '';
     alert('Email enviado a ' + total + ' destinatario' + (total === 1 ? '' : 's') + pdfNote + ' desde presupuestos@rattohnos.com.ar' + (replyTo ? ' (respuestas → ' + replyTo + ')' : ''));
   } catch (err) {
     console.error('Email worker error:', err);
     const useMailto = confirm('No se pudo enviar automáticamente.\n\nMotivo: ' + (err?.message || err) + '\n\n¿Querés abrir tu cliente de email como respaldo? (El PDF lo adjuntás vos a mano)');
-    if (useMailto) _fallbackMailto(to, cc, subject, body);
+    if (useMailto) _fallbackMailto(to, cc, bcc, subject, body);
   } finally {
     buttons.forEach((b, i) => { b.disabled = false; b.innerHTML = originals[i]; });
   }
@@ -9803,6 +9817,47 @@ document.addEventListener('DOMContentLoaded', setupRecentsAutocomplete);
     return result;
   };
 })();
+
+
+
+// ============================================================================
+// VALIDACIÓN EN VIVO de campos obligatorios (v72)
+// Verde cuando el valor es válido, rojo cuando es inválido y no vacío,
+// neutro cuando está vacío (para no asustar antes de que toquen el campo).
+// ============================================================================
+const FORM_REQUIRED_VALIDATORS = {
+  fClient: v => v.trim().length >= 2,
+  fEmail:  v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+  fPhone:  v => v.trim().replace(/\D/g, '').length >= 6,
+};
+
+function _liveValidateField(el) {
+  if (!el) return;
+  const wrap = el.closest('.field');
+  if (!wrap) return;
+  const validator = FORM_REQUIRED_VALIDATORS[el.id];
+  if (!validator) return;
+  const val = el.value || '';
+  if (val.trim() === '') {
+    wrap.classList.remove('is-valid', 'is-invalid');
+  } else if (validator(val)) {
+    wrap.classList.add('is-valid');
+    wrap.classList.remove('is-invalid');
+  } else {
+    wrap.classList.add('is-invalid');
+    wrap.classList.remove('is-valid');
+  }
+}
+
+function setupLiveValidation() {
+  Object.keys(FORM_REQUIRED_VALIDATORS).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => _liveValidateField(el));
+    el.addEventListener('blur',  () => _liveValidateField(el));
+  });
+}
+document.addEventListener('DOMContentLoaded', setupLiveValidation);
 
 </script>
 </body>
