@@ -2099,6 +2099,84 @@
     }
   }
 
+
+  /* === v71: Clientes recientes + Contact Picker === */
+  .client-field-wrap { position: relative; }
+  .client-input-row {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+  }
+  .client-input-row input { flex: 1 1 auto; min-width: 0; }
+  .btn-pick-contact {
+    flex: 0 0 auto;
+    width: 44px;
+    height: auto;
+    min-height: 38px;
+    border: 1.5px solid var(--jd-gray-300);
+    border-radius: var(--radius-sm);
+    background: var(--jd-white);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+    line-height: 1;
+  }
+  .btn-pick-contact:hover {
+    border-color: var(--jd-green);
+    background: var(--jd-gray-50);
+    transform: scale(1.04);
+  }
+  .btn-pick-contact:active { transform: scale(0.96); }
+  .btn-pick-contact[hidden] { display: none !important; }
+
+  .recents-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    z-index: 50;
+    background: var(--jd-white);
+    border: 1.5px solid var(--jd-gray-300);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 4px;
+  }
+  .recents-dropdown.open { display: block; }
+  .recent-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--jd-gray-100);
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item:hover, .recent-item:active {
+    background: var(--jd-yellow-soft);
+  }
+  .recent-name {
+    font-weight: 700;
+    color: var(--jd-black);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  .recent-meta {
+    font-size: 11px;
+    color: var(--jd-gray-500);
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .recents-empty {
+    padding: 14px 16px;
+    text-align: center;
+    color: var(--jd-gray-500);
+    font-size: 12px;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
 </style>
 </head>
 <body>
@@ -2125,7 +2203,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v70</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v71</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2209,7 +2287,14 @@
       <p class="panel-subtitle">Los campos marcados con <span class="req-mark">*</span> son obligatorios.</p>
       <div class="specs-card">
         <div class="form-grid">
-          <div class="field"><label>Cliente <span class="req-mark">*</span></label><input type="text" id="fClient" placeholder="Razón social o nombre"></div>
+          <div class="field client-field-wrap">
+            <label>Cliente <span class="req-mark">*</span></label>
+            <div class="client-input-row">
+              <input type="text" id="fClient" placeholder="Razón social o nombre" autocomplete="off">
+              <button type="button" id="btnPickContact" class="btn-pick-contact" hidden onclick="pickFromContacts()" title="Elegir de contactos" aria-label="Elegir de contactos">📇</button>
+            </div>
+            <div id="recentClientsDropdown" class="recents-dropdown"></div>
+          </div>
           <div class="field"><label>CUIT / DNI <span class="opt-mark">(opcional)</span></label><input type="text" id="fCuit" placeholder="20-XXXXXXXX-X" inputmode="numeric" pattern="[0-9]*"></div>
           <div class="field"><label>Localidad <span class="opt-mark">(opcional)</span></label><input type="text" id="fLoc" placeholder="Ej: San Antonio de Areco"></div>
           <div class="field"><label>Teléfono <span class="req-mark">*</span></label><input type="tel" id="fPhone" placeholder="Ej: 2326 421325" inputmode="tel" autocomplete="tel"></div>
@@ -9517,6 +9602,207 @@ function renderCompare() {
       '+ Agregar ' + mB.modelo + ' al presupuesto' +
     '</button>';
 }
+
+
+
+// ============================================================================
+// CLIENTES RECIENTES + CONTACT PICKER (v71)
+// ============================================================================
+
+const RECENT_CLIENTS_KEY = 'proratto_recent_clients_v1';
+const RECENT_CLIENTS_LIMIT = 50;
+
+function getRecentClients() {
+  try {
+    const raw = localStorage.getItem(RECENT_CLIENTS_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    return Array.isArray(list) ? list : [];
+  } catch (_) { return []; }
+}
+
+function saveRecentClient(client) {
+  if (!client || !client.nombre || client.nombre.trim().length < 2) return;
+  const norm = {
+    nombre:    (client.nombre || '').trim(),
+    cuit:      (client.cuit || '').trim(),
+    email:     (client.email || '').trim(),
+    telefono:  (client.telefono || '').trim(),
+    localidad: (client.localidad || '').trim(),
+    addedAt:   Date.now(),
+  };
+  const list = getRecentClients();
+  const keyOf = c => (c.nombre || '').trim().toLowerCase() + '|' + (c.cuit || '').trim();
+  const newKey = keyOf(norm);
+  // Remover si ya existe (lo movemos al top) y mergeamos info no vacía
+  const idx = list.findIndex(c => keyOf(c) === newKey);
+  if (idx >= 0) {
+    const old = list[idx];
+    // Preservar valores viejos si los nuevos vienen vacíos
+    norm.cuit      = norm.cuit      || old.cuit      || '';
+    norm.email     = norm.email     || old.email     || '';
+    norm.telefono  = norm.telefono  || old.telefono  || '';
+    norm.localidad = norm.localidad || old.localidad || '';
+    list.splice(idx, 1);
+  }
+  list.unshift(norm);
+  const trimmed = list.slice(0, RECENT_CLIENTS_LIMIT);
+  try {
+    localStorage.setItem(RECENT_CLIENTS_KEY, JSON.stringify(trimmed));
+  } catch (e) {
+    console.warn('No se pudo guardar cliente reciente:', e?.message || e);
+  }
+}
+
+// Snapshot del cliente actual desde el formulario
+function _snapshotClientFromForm() {
+  return {
+    nombre:    (document.getElementById('fClient')?.value || ''),
+    cuit:      (document.getElementById('fCuit')?.value || ''),
+    email:     (document.getElementById('fEmail')?.value || ''),
+    telefono:  (document.getElementById('fPhone')?.value || ''),
+    localidad: (document.getElementById('fLoc')?.value || ''),
+  };
+}
+
+// Contact Picker API — solo Chrome/Edge Android.
+async function pickFromContacts() {
+  if (!('contacts' in navigator) || typeof navigator.contacts.select !== 'function') {
+    alert('Tu navegador no soporta selección de contactos. Esta opción funciona en Chrome para Android.');
+    return;
+  }
+  try {
+    let usableProps = ['name', 'email', 'tel'];
+    if (typeof navigator.contacts.getProperties === 'function') {
+      try {
+        const supported = await navigator.contacts.getProperties();
+        usableProps = usableProps.filter(p => supported.includes(p));
+      } catch (_) { /* getProperties no soportado → uso defaults */ }
+    }
+    const contacts = await navigator.contacts.select(usableProps, { multiple: false });
+    if (!contacts || !contacts.length) return;
+    const c = contacts[0];
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+    if (c.name && c.name.length)  setVal('fClient', c.name[0]);
+    if (c.email && c.email.length) setVal('fEmail', c.email[0]);
+    if (c.tel && c.tel.length)    setVal('fPhone', c.tel[0]);
+    hideRecentsDropdown();
+  } catch (e) {
+    console.error('Contact picker error:', e);
+    if (e && e.name !== 'AbortError') {
+      alert('No pude leer el contacto: ' + (e?.message || e));
+    }
+  }
+}
+
+// Aplicar un cliente reciente al formulario (rellena los 5 campos)
+function applyRecentClient(client) {
+  if (!client) return;
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = val || '';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  };
+  setVal('fClient', client.nombre);
+  setVal('fCuit',   client.cuit);
+  setVal('fEmail',  client.email);
+  setVal('fPhone',  client.telefono);
+  setVal('fLoc',    client.localidad);
+  hideRecentsDropdown();
+}
+// Expose globally para usar desde onmousedown inline en el dropdown
+window._applyRecentByIdx = function(idx) {
+  const list = window._recentsCurrentList || [];
+  if (list[idx]) applyRecentClient(list[idx]);
+};
+
+function _renderRecentsDropdown(query) {
+  const dropdown = document.getElementById('recentClientsDropdown');
+  if (!dropdown) return;
+  const all = getRecentClients();
+  let list = all;
+  if (query && query.trim().length > 0) {
+    const q = query.toLowerCase().trim();
+    list = all.filter(c =>
+      (c.nombre || '').toLowerCase().includes(q) ||
+      (c.cuit || '').includes(q) ||
+      (c.email || '').toLowerCase().includes(q)
+    );
+  }
+  window._recentsCurrentList = list.slice(0, 20);
+  if (list.length === 0) {
+    if (all.length === 0) {
+      dropdown.innerHTML = '<div class="recents-empty">Sin clientes recientes todavía. Los próximos presupuestos que generes se van a guardar acá para reusarlos.</div>';
+    } else {
+      dropdown.innerHTML = '<div class="recents-empty">Ningún cliente reciente matchea "' + query + '".</div>';
+    }
+    dropdown.classList.add('open');
+    return;
+  }
+  dropdown.innerHTML = window._recentsCurrentList.map((c, i) => {
+    const meta = [c.cuit, c.localidad, c.telefono].filter(x => x && x.trim()).join(' · ');
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return '<div class="recent-item" onmousedown="event.preventDefault(); _applyRecentByIdx(' + i + ')" ontouchstart="event.preventDefault(); _applyRecentByIdx(' + i + ')">' +
+      '<div class="recent-name">' + esc(c.nombre) + '</div>' +
+      (meta ? '<div class="recent-meta">' + esc(meta) + '</div>' : '') +
+    '</div>';
+  }).join('');
+  dropdown.classList.add('open');
+}
+
+function showRecentsDropdown() {
+  const fClient = document.getElementById('fClient');
+  if (!fClient) return;
+  _renderRecentsDropdown(fClient.value);
+}
+
+function hideRecentsDropdown() {
+  const dropdown = document.getElementById('recentClientsDropdown');
+  if (dropdown) dropdown.classList.remove('open');
+}
+
+function setupRecentsAutocomplete() {
+  const fClient = document.getElementById('fClient');
+  if (!fClient) return;
+  fClient.addEventListener('focus', showRecentsDropdown);
+  fClient.addEventListener('input', (e) => _renderRecentsDropdown(e.target.value));
+  fClient.addEventListener('blur', () => setTimeout(hideRecentsDropdown, 220));
+  fClient.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideRecentsDropdown();
+  });
+  // Feature-detect Contact Picker (Android Chrome/Edge)
+  const btn = document.getElementById('btnPickContact');
+  if (btn && 'contacts' in navigator && typeof navigator.contacts.select === 'function') {
+    btn.hidden = false;
+  }
+}
+document.addEventListener('DOMContentLoaded', setupRecentsAutocomplete);
+
+// Hook al generateSheet — guardar el cliente automático cuando se crea
+// el presupuesto. Wrap el generateSheet original.
+(function wrapGenerateSheet() {
+  if (typeof generateSheet !== 'function') return;
+  const _origGenerateSheet = generateSheet;
+  window.generateSheet = function() {
+    const snap = _snapshotClientFromForm();
+    const result = _origGenerateSheet.apply(this, arguments);
+    // Guardar después (que no rompa si generateSheet abortó)
+    try {
+      if (snap.nombre && snap.nombre.trim().length >= 2) {
+        saveRecentClient(snap);
+      }
+    } catch (_) { /* no romper el flujo */ }
+    return result;
+  };
+})();
 
 </script>
 </body>
