@@ -2281,7 +2281,7 @@
       <div class="topbar-left">
         <div class="topbar-title-block" onclick="goHome()">
           <h1>ProRatto</h1>
-          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v74</span></p>
+          <p class="subtitle">Presupuestador · Lista Abril 2026 <span class="app-version-tag">· v75</span></p>
         </div>
       </div>
       <div class="topbar-actions">
@@ -2468,8 +2468,8 @@
         <span></span><span></span><span></span><span></span>
         <span></span><span></span><span></span><span></span>
       </div>
-      <div class="sending-msg" id="sendingMsg">Enviando presupuesto…</div>
-      <div class="sending-sub">Esto puede tardar unos segundos.<br>No cierres esta ventana.</div>
+      <div class="sending-msg" id="sendingMsg">Tu presupuesto está en camino 🚜</div>
+      <div class="sending-sub">Unos segundos y listo.<br>No cierres esta ventana.</div>
     </div>
   </div>
 
@@ -8422,7 +8422,7 @@ async function shareEmail() {
   const originals = buttons.map(b => b.innerHTML);
   const setBtnText = (txt) => buttons.forEach(b => { b.disabled = true; b.innerHTML = txt; });
   setBtnText('Generando PDF…');
-  showSendingOverlay('Generando presupuesto…');
+  showSendingOverlay('Poniendo todo en marcha…');
 
   // Generar el PDF como adjunto. Si falla, preguntamos si seguir sin PDF.
   let attachment = null;
@@ -8439,7 +8439,7 @@ async function shareEmail() {
   }
 
   setBtnText('Enviando…');
-  updateSendingMsg('Enviando presupuesto…');
+  updateSendingMsg('Tu presupuesto está en camino 🚜');
 
   try {
     const payload = { to, subject, body, bodyType: 'text' };
